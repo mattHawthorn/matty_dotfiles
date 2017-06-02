@@ -1,0 +1,12 @@
+[core]
+	editor = vim
+	excludesfile = /home/matt/.gitignore_global
+[diff]
+	tool = vimdiff
+[commit]
+	template = /home/matt/.gitcommitmsg.txt
+[user]
+	name = mattHawthorn
+	email = hawthorn.matthew@gmail.com
+[credential]
+	helper = cache --timeout=3600
