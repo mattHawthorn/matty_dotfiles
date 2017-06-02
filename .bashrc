@@ -193,11 +193,9 @@ backup() {
            echo "${f} appears to already be a backup file; skipping"
            continue
         fi
-        local flag=""
-        local backupname="${f}.backup"
+        local backupname="$(basename $f).backup"
         local backuploc="${dest}/${backupname}"
         robustcopy $f $backuploc
-        cp $flag $f $backuploc
     done
 }
 
