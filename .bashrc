@@ -69,7 +69,8 @@ xterm*|rxvt*)
     ;;
 esac
 
-# enable color support of ls and also add handy aliases
+# enable color support of ls and also add handy 
+aliases
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
@@ -237,10 +238,12 @@ alias DTM='/home/matt/Git/dtm/dtm/main'
 #alias pip3='usr/bin/pip'
 alias pyconda2='/home/matt/anaconda3/envs/anaconda2/bin/python2.7'
 alias pyconda3='/home/matt/anaconda3/bin/python3.5'
+alias pyconda='/home/matt/anaconda3/bin/python3.5'
 alias conda2='/home/matt/anaconda3/envs/anaconda2/bin/conda'
 alias conda3='/home/matt/anaconda3/bin/conda'
 alias condapip2='/home/matt/anaconda3/envs/anaconda2/bin/pip'
 alias condapip3='/home/matt/anaconda3/bin/pip'
+alias condapip='/home/matt/anaconda3/bin/pip'
 
 SANDBOX="/home/matt/Desktop/sandbox"
 
