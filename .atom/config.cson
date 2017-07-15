@@ -1,3 +1,11 @@
 "*":
+  core: {}
   "exception-reporting":
     userId: "04141566-b7f6-49c3-ab19-0f9d350a0752"
+  "haskell-ghc-mod":
+    additionalPathDirectories: [
+      "/home/matt/.local/bin/"
+    ]
+    ghcModPath: "/home/matt/.local/bin/ghc-mod"
+    onChangeCheck: true
+  "ide-haskell": {}

@@ -1,34 +1,30 @@
 [core]
-	editor = vim
-	excludesfile = /home/matt/.gitignore_global
+    editor = vim
+    excludesfile = /home/matt/.gitignore_global
 [diff]
-	tool = vimdiff
+    tool = vimdiff
 [difftool]                                                                      
     prompt = false
 [commit]
-	template = /home/matt/.gitcommitmsg.txt
+    template = /home/matt/.gitcommitmsg.txt
 [user]
-	name = mattHawthorn
-	email = hawthorn.matthew@gmail.com
+    name = mattHawthorn
+    email = hawthorn.matthew@gmail.com
 [credential]
 	helper = cache --timeout=3600
 [alias]
     co = checkout
-    cm = commit
-	sl = log --oneline
-	slg = log --oneline --graph
-        lg = log --graph --pretty=format:'%Cred%h%Creset %s%Cred%d%Creset %Cgreen(%cr by %cN)%Creset'
-	ch = checkout
-	cr = rebase -i -p origin/develop
-	fp = fetch --prune
-        fpp = !git fp && git pull
-	rmr = !sh -c 'git push origin :$1' -
-  inrev = !sh -c '/opt/devel/src/devenv/git/put_in_review.sh $0'
-  bojanglin = !sh -c '/opt/devel/src/devenv/git/put_in_review.sh $0'
-  fmerge = !sh -c /opt/devel/src/devenv/git/submit_merge_request.sh
-  chillzone = !sh -c /opt/devel/src/devenv/git/submit_merge_request.sh
-	pub = !sh -c 'git rebase -i -p origin/`git symbolic-ref HEAD | xargs -n 1 basename` && git push origin `git symbolic-ref HEAD | xargs -n 1 basename`'
-        lg50 = "!git log --graph --abbrev-commit --date=relative --pretty=format:'%x00%h%x00%s%x00%cd%x00%an%x00%d' | gawk -F '\\0' '{ printf \"%s\\033[31m%s\\033[0m %-50s \\033[32m%14s\\033[0m \\033[30;1m%s\\033[0m\\033[33m%s\\n\", $1, $2, gensub(/(.{49}).{2,}/, \"\\\\1…\",\"g\",$3), $4, $5, $6 }' | less -R"
-        lg80 = "!git log --graph --abbrev-commit --date=relative --pretty=format:'%x00%h%x00%s%x00%cd%x00%an%x00%d' | gawk -F '\\0' '{ printf \"%s\\033[31m%s\\033[0m %-80s \\033[32m%14s\\033[0m \\033[30;1m%s\\033[0m\\033[33m%s\\n\", $1, $2, gensub(/(.{79}).{2,}/, \"\\\\1…\",\"g\",$3), $4, $5, $6 }' | less -R"
-        lt = "!git log --graph --abbrev-commit --color=always --abbrev-commit --pretty=format:'%h,%s,%d,%cr,%an,%cn' | gawk -F ',' '{ printf \"%s \\033[31m%s\\033[0m %-80s \\033[32m%14s\\033[0m \\033[30;1m%s\\033[0m\\033[33m%s\\n\", $1, $2, gensub(/(.{79}).{2,}/, \"\\\\1…\",\"g\",$3), $4, $5, $6 }'"
-        lg = "!git log --graph --abbrev-commit --color=always --abbrev-commit --pretty=format:'%h@@@%s@@@%cr@@@%an@@@(%cn)@@@%d' --date=relative | gawk -F'@@@' '{ printf \"%s \\033[31m%-60s\\033[0m \\033[32m%-18s\\033[0m \\033[30;1m%-20s\\033[0m\\033[33m%-15s\\033[34m%-10s\\033[0m\\n\", $1, substr($2,0,60), $3, $4, $5, $6, $7 }' | less -R"
+    cm = commit -m 
+    sl = log --oneline
+    slg = log --oneline --graph
+    lg = log --graph --pretty=format:'%Cred%h%Creset %s%Cred%d%Creset %Cgreen(%cr by %cN)%Creset'
+    ch = checkout
+    cr = rebase -i -p origin/develop
+    fp = fetch --prune
+    fpp = !git fp && git pull
+    rmr = !sh -c 'git push origin :$1' -
+    pub = !sh -c 'git rebase -i -p origin/`git symbolic-ref HEAD | xargs -n 1 basename` && git push origin `git symbolic-ref HEAD | xargs -n 1 basename`'
+    lg50 = "!git log --graph --abbrev-commit --date=relative --pretty=format:'%x00%h%x00%s%x00%cd%x00%an%x00%d' | gawk -F '\\0' '{ printf \"%s\\033[31m%s\\033[0m %-50s \\033[32m%14s\\033[0m \\033[30;1m%s\\033[0m\\033[33m%s\\n\", $1, $2, gensub(/(.{49}).{2,}/, \"\\\\1…\",\"g\",$3), $4, $5, $6 }' | less -R"
+    lg80 = "!git log --graph --abbrev-commit --date=relative --pretty=format:'%x00%h%x00%s%x00%cd%x00%an%x00%d' | gawk -F '\\0' '{ printf \"%s\\033[31m%s\\033[0m %-80s \\033[32m%14s\\033[0m \\033[30;1m%s\\033[0m\\033[33m%s\\n\", $1, $2, gensub(/(.{79}).{2,}/, \"\\\\1…\",\"g\",$3), $4, $5, $6 }' | less -R"
+    lt = "!git log --graph --abbrev-commit --color=always --abbrev-commit --pretty=format:'%h,%s,%d,%cr,%an,%cn' | gawk -F ',' '{ printf \"%s \\033[31m%s\\033[0m %-80s \\033[32m%14s\\033[0m \\033[30;1m%s\\033[0m\\033[33m%s\\n\", $1, $2, gensub(/(.{79}).{2,}/, \"\\\\1…\",\"g\",$3), $4, $5, $6 }'"
+    lg = "!git log --graph --abbrev-commit --color=always --abbrev-commit --pretty=format:'%h@@@%s@@@%cr@@@%an@@@(%cn)@@@%d' --date=relative | gawk -F'@@@' '{ printf \"%s \\033[31m%-60s\\033[0m \\033[32m%-18s\\033[0m \\033[30;1m%-20s\\033[0m\\033[33m%-15s\\033[34m%-10s\\033[0m\\n\", $1, substr($2,0,60), $3, $4, $5, $6, $7 }' | less -R"

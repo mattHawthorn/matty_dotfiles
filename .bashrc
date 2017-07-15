@@ -13,8 +13,8 @@ HISTCONTROL=ignoreboth
 shopt -s histappend
 
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-HISTSIZE=1000
-HISTFILESIZE=2000
+HISTSIZE=10000
+HISTFILESIZE=20000
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -70,7 +70,7 @@ xterm*|rxvt*)
 esac
 
 # enable color support of ls and also add handy 
-aliases
+# aliases
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
@@ -117,8 +117,37 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
+# math
+
+tobase() { 
+  local num="$1" base="$2" res="" sign=""
+  [[ $num -lt 0 ]] && sign='-' && ((num *= -1))
+  while [[ $num -gt 0 ]]; do
+    res=$(( num % base ))$res
+    ((num /= base))
+  done
+  echo "$sign$res"
+}
+
+binary() {
+  tobase $1 2
+}
 
 # file inspection/mgmt utils
+
+mkrdir() {
+  # recursive mkdir
+  local curdir=$(pwd)
+  local dirs=$(echo $1 | cut -d "/" --output-delimiter=" " -f 1-)
+  for d in ${dirs[@]}; do
+    if [ ! -d $d ]; then
+      mkdir $d
+    fi
+    cd $d
+  done
+  cd $curdir
+}
+
 robustcopy() {
     local from=$1 to=$2
     local flag=""
@@ -226,6 +255,22 @@ charsof() {
     find . -type f -iregex "$pattern" | xargs wc -c
 }
 
+fn_exists() {
+    type $1 | grep -q "is a function"
+}
+
+assignfunc() {
+    local oldname=$1
+    local newname=$2
+    # check if this is a thing we can call
+    if type -p $oldname; then
+        local def=$newname'() { '$oldname' $@; }'
+        eval $def
+    else
+        echo "$oldname isn't callable"
+    fi
+}
+
 
 # Data science things
 
@@ -298,14 +343,17 @@ export PATH="$PATH:/home/matt/anaconda3/bin"
 alias charm="/opt/pycharm-community-2016.3.2/bin/pycharm.sh"
 
 # for haskell
-export PATH="$PATH:/home/matt/.local/bin"
-alias ghci="stack ghci"
-alias ghc="stack ghc"
+#export PATH="$PATH:/home/matt/.local/bin"
+#alias ghci="stack ghci"
+#alias ghc="stack ghc"
 
 #export PATH="$PATH:/opt/Adobe/Reader9/bin"
 
 # texlive install
+export PATH="$PATH:/usr/local/texlive/2017/bin/x86_64-linux"
 export PATH="$PATH:/usr/local/texlive/2015/bin/x86_64-linux"
+export MANPATH="$MANPATH:/usr/local/texlive/2017/texmf-dist/doc/man"
+export INFOPATH="$INFOPATH:/usr/local/texlive/2017/texmf-dist/doc/info"
 
 # spark location
 SPARK_HOME="/opt/spark-1.6.1-bin-hadoop2.6/"

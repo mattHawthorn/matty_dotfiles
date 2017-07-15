@@ -1,1 +1,3 @@
 .vim/bundle
+.idea
+.atom/blob-store
