@@ -161,6 +161,7 @@ source "$HOME/scripts/bashutils.sh"
 source "$HOME/scripts/clipboard.sh"
 source "$HOME/scripts/safely.sh"
 source "$HOME/scripts/mathutils.sh"
+source "$HOME/scripts/papertitle.sh"
 source "$HOME/scripts/fileutils.sh"
 source "$HOME/scripts/pyutils.sh"
 

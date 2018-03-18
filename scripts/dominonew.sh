@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-UNSAFECODE=0
-safely(){
-    [[ "$SAFE" == "$UNSAFECODE" ]] && "$@" || echo "    RUN:  $@"
-}
+source "$(dirname "$BASH_SOURCE")/safely.sh"
 
+# create a new Domino project
+DOMINOUSER="matthawthorn"
+DOMINOPATH="$HOME/Domino"
+DOMINOTEMPLATEPATH="$DOMINOPATH/ProjectTemplate"
 
 _dominonewusage(){
     echo
