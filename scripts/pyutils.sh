@@ -201,4 +201,3 @@ _scratchpad() {
     # COMPREPLY=(${COMPREPLY[@]} $COMP_CWORD  "'" ${COMP_WORDS[-1]} "'")
 }
 complete -o filenames -o nospace -F _scratchpad scratchpad
-

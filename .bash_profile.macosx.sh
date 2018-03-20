@@ -67,8 +67,8 @@ source "$HOME/scripts/pyutils.sh"
 source "$HOME/scripts/homebrew_setup.sh"
 source "$HOME/scripts/dominonew.sh"
 
+export PATH="$HOME/anaconda3/bin/:$PATH"
 set_python_dev_aliases
 set_conda_env_aliases
 
 alias datify="$HOME/scripts/datify.sh"
-

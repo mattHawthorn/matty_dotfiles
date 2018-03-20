@@ -22,7 +22,7 @@ Options:
   -f DATEFMT   Posix-compliant date format to use.
                Defaults to '%Y-%m-%d'
   -t FILETYPES Only apply dates to files with types in FILETYPES, a string of
-               single-character filetype aliases as understood by the `find` 
+               single-character filetype aliases as understood by the \`find\` 
                command (d for dir, f for file, etc.)
   -r           Apply recursively to subdirectories
   -s           Append date as suffix rather than prefix
@@ -126,6 +126,7 @@ shift $(( $OPTIND - 1 ))
 
 if [[ -z "$1" ]]; then
   echo "No path argument!" >&2
+  echo
   usage
   exit 1
 fi
@@ -191,4 +192,3 @@ for FILEPATH in "$@"; do
       done
     }
 done
-
