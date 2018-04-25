@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-my_work_page="https://spgmi.visualstudio.com/_work"
+my_work_page="https://spglobal.visualstudio.com/_work"
 
 startup_apps=("DominoApp" 
 #    "VisualStudioApp"
