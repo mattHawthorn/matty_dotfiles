@@ -7,7 +7,7 @@ n_nonflags() {
 }
 
 TITLE_SCRIPT='
-BEGIN { split("a the to at in on with and but or", w)
+BEGIN { split("a the to at in on with and but or of", w)
         for (i in w) nocap[w[i]] }
 
 function cap(word) {
