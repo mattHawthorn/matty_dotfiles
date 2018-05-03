@@ -3,6 +3,7 @@
 
 # conda-related aliases
 set_conda_env_aliases() {
+    [ ! -z $CONDA_ENV_ALIASES_SET ] && return 0
     local tmpfile=/tmp/conda_env_aliases
     conda env list | 
         while read line; do
