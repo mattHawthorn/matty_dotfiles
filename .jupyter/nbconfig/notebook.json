@@ -1,0 +1,22 @@
+{
+  "keys": {
+    "command": {
+      "unbind": [
+        "shift-l",
+        "s"
+      ],
+      "bind": {
+        "g,g,g": "jupyter-notebook:restart-kernel-and-run-all-cells",
+        "ctrl-shift-o": "jupyter-notebook:clear-cell-output",
+        "alt-down": "jupyter-notebook:move-cell-down",
+        "e,e": "jupyter-notebook:edit-command-mode-keyboard-shortcuts",
+        "r,r,r": "jupyter-notebook:restart-kernel-and-run-all-cells",
+        "alt-up": "jupyter-notebook:move-cell-up"
+      }
+    }
+  },
+  "Notebook": {
+    "Header": true,
+    "Toolbar": false
+  }
+}

@@ -43,7 +43,7 @@ fi
 # work-specific aliases
 
 # music player
-alias music="/Applications/QuodLibet.app/Contents/MacOS/run ~/Git/quodlibet/quodlibet/quodlibet.py"
+alias music="/Applications/QuodLibet.app/Contents/MacOS/run ~/Git/quodlibet/quodlibet/quodlibet.py &"
 
 # start of day script:
 alias gettowork="~/scripts/getToWork.sh"
@@ -54,6 +54,7 @@ alias snldb='tsql -H SNLSQLDEV'
 alias sshprod='ssh dmzchodswprd01.snlnet.int'
 alias sshstg='ssh dmzchodswstg01.snlnet.int'
 alias sshdev='ssh ashdswdev02.snl.int'
+alias sshchodsdev="ssh $USER@CHODSDEV01"
 
 # vpn
 alias spglobalvpn='/opt/cisco/anyconnect/bin/vpn connect us-remote.spglobal.com/vpn'

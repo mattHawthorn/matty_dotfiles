@@ -14,3 +14,5 @@ startup_apps=("DominoApp"
 for app in "${startup_apps[@]}"; do
     open -a $app
 done
+
+kinit
