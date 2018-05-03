@@ -40,6 +40,9 @@ fi
 # bash-git-prompt
 [ -d ~/.bash-git-prompt ] && GIT_PROMPT_ONLY_IN_REPO=1 && source ~/.bash-git-prompt/gitprompt.sh
 
+# extra path munging for specific machines, if needed
+[ -f ~/.bash_add_path ] && source ~/.bash_add_path
+
 # work-specific aliases
 
 # music player

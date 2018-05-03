@@ -12,7 +12,7 @@ cd ~
 
 TMPFILE="$(mktemp)"
 find $DOTFILESDIR -maxdepth 1 -name '.*' -not -name '.gitignore' -not -name '.git' -exec echo {} \; > $TMPFILE
-echo scripts >> $TMPFILE
+echo "$DOTFILESDIR/scripts" >> $TMPFILE
 
 for line in $(cat $TMPFILE); do prompt_symlink "$line"; done;
 rm $TMPFILE
