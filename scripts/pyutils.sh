@@ -3,15 +3,15 @@
 
 # conda-related aliases
 set_conda_env_aliases() {
+    local tmpfile=/tmp/conda_env_aliases
     conda env list | 
         while read line; do
             env=$(echo "$line" | cut -f 1 -d ' ')
             version="$(echo $env | grep -E '[23]\.?[4-7]?' | tr -cd 0-9)"
             [ -z "$version" ] && continue
-            echo "alias py$version='source activate $env'" >> /tmp/conda_env_aliases
+            echo "alias py$version='source activate $env'" >> $tmpfile
         done
-    source /tmp/conda_env_aliases
-    rm /tmp/conda_env_aliases
+    [ -f $tmpfile ] && source /tmp/conda_env_aliases && rm $tmpfile
     alias sa='source activate'
     alias sda='source deactivate'
     alias notebook='jupyter notebook'

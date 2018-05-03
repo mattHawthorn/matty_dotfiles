@@ -31,7 +31,14 @@ fi
 
 # completions
 BASHCOMPLETIONDIR="/usr/local/etc/bash_completion.d"
-for f in $(ls "$BASHCOMPLETIONDIR"); do source "$BASHCOMPLETIONDIR/$f"; done
+if [ -d $BASHCOMPLETIONDIR ]; then
+    for f in $(ls "$BASHCOMPLETIONDIR"); do source "$BASHCOMPLETIONDIR/$f"; done
+else
+    unset  BASHCOMPLETIONDIR
+fi
+
+# bash-git-prompt
+[ -d ~/.bash-git-prompt ] && GIT_PROMPT_ONLY_IN_REPO=1 && source ~/.bash-git-prompt/gitprompt.sh
 
 # work-specific aliases
 
@@ -64,8 +71,8 @@ source "$HOME/scripts/mathutils.sh"
 source "$HOME/scripts/papertitle.sh"
 source "$HOME/scripts/fileutils.sh"
 source "$HOME/scripts/pyutils.sh"
-source "$HOME/scripts/homebrew_setup.sh"
-source "$HOME/scripts/dominonew.sh"
+which brew > /dev/null && source "$HOME/scripts/homebrew_setup.sh"
+which domino > /dev/null && source "$HOME/scripts/dominonew.sh"
 
 export PATH="$HOME/anaconda3/bin/:$PATH"
 set_python_dev_aliases
