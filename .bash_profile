@@ -83,3 +83,4 @@ set_python_dev_aliases
 set_conda_env_aliases && CONDA_ENV_ALIASES_SET=1
 
 alias datify="$HOME/scripts/datify.sh"
+EMAIL_ADDRESS=matthew.hawthorn@spglobal.com

@@ -1,5 +1,22 @@
-
 # Python starter-uppers
+
+trypy() {
+    # try a sequence of commands in a python interpreter,
+    # without having to worry about the logout or getting all your
+    # lines semicolon-separated, or worrying about the shell's escape handling.
+    # works for a list of literal args, treated as lines, or read from stdin
+    # if no args are passed
+    if [ $# -eq 0 ]; then
+        # read stdin
+        while read -r line; do
+           echo "$line"
+        done
+    else
+        for line in "$@"; do
+           echo "$line"
+        done
+    fi | python -
+}
 
 # conda-related aliases
 set_conda_env_aliases() {
@@ -16,6 +33,7 @@ set_conda_env_aliases() {
     alias sa='source activate'
     alias sda='source deactivate'
     alias notebook='jupyter notebook'
+    CONDA_ENV_ALIASES_SET=1
 }
 
 set_python_dev_aliases() {
