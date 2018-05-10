@@ -20,7 +20,6 @@ trypy() {
 
 # conda-related aliases
 set_conda_env_aliases() {
-    [ ! -z $CONDA_ENV_ALIASES_SET ] && return 0
     local tmpfile=/tmp/conda_env_aliases
     conda env list | 
         while read line; do
@@ -33,7 +32,7 @@ set_conda_env_aliases() {
     alias sa='source activate'
     alias sda='source deactivate'
     alias notebook='jupyter notebook'
-    CONDA_ENV_ALIASES_SET=1
+    export CONDA_ENV_ALIASES_SET=1
 }
 
 set_python_dev_aliases() {

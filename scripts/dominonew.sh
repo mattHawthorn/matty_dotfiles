@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-source "$(dirname "$BASH_SOURCE")/safely.sh"
+[ ! "$BASHUTILS_IMPORTED" == 1 ] && source "$(dirname "$BASH_SOURCE")/bashutils.sh"
 
 # create a new Domino project
 DOMINOUSER="matthawthorn"
@@ -82,8 +82,8 @@ dominonew(){
   echo "NEW DOMINO REPOSITORY AT $newdir FOR USER $user WITH TEMPLATE $template"
   echo
   
-  echo "copying contents of $DOMINOTEMPLATEPATH to $newdir"
-  if ! safely cp -r "$DOMINOTEMPLATEPATH" "$newdir"; then
+  echo "copying contents of $template to $newdir"
+  if ! safely cp -r "$template" "$newdir"; then
     echo "$(dirname $newdir) does not exist; please create it first"
     return 1
   fi

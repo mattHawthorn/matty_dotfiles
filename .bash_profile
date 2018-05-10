@@ -1,6 +1,13 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
+# do this first to make GNU utils available in this script on Mac OS X
+which brew > /dev/null && source "$HOME/scripts/homebrew_setup.sh"
+# custom bash helpers - bashutils needed for safely(), quietly(), start(), finish()
+source "$HOME/scripts/bashutils.sh"
+
+start bash_profile
+
 # interactive shell config
 
 # don't put duplicate lines or lines starting with space in the history.
@@ -29,13 +36,6 @@ else
     PS1='\u@\h:\w\$'
 fi
 
-# completions
-BASHCOMPLETIONDIR="/usr/local/etc/bash_completion.d"
-if [ -d $BASHCOMPLETIONDIR ]; then
-    for f in $(ls "$BASHCOMPLETIONDIR"); do source "$BASHCOMPLETIONDIR/$f"; done
-else
-    unset  BASHCOMPLETIONDIR
-fi
 
 # bash-git-prompt
 [ -d ~/.bash-git-prompt ] && GIT_PROMPT_ONLY_IN_REPO=1 && source ~/.bash-git-prompt/gitprompt.sh
@@ -67,20 +67,36 @@ alias spglobalvpn='/opt/cisco/anyconnect/bin/vpn connect us-remote.spglobal.com/
 alias ll='ls -lF'
 alias la='ls -alF'
 
+
+start source_custom_scripts
+
 # custom scripts/utils
-source "$HOME/scripts/bashutils.sh"
 source "$HOME/scripts/clipboard.sh"
-source "$HOME/scripts/safely.sh"
 source "$HOME/scripts/mathutils.sh"
 source "$HOME/scripts/papertitle.sh"
 source "$HOME/scripts/fileutils.sh"
-source "$HOME/scripts/pyutils.sh"
-which brew > /dev/null && source "$HOME/scripts/homebrew_setup.sh"
-which domino > /dev/null && source "$HOME/scripts/dominonew.sh"
 
+start python_setup
+source "$HOME/scripts/pyutils.sh"
 export PATH="$HOME/anaconda3/bin/:$PATH"
 set_python_dev_aliases
-set_conda_env_aliases && CONDA_ENV_ALIASES_SET=1
+set_conda_env_aliases
+# domino project start helper
+which domino > /dev/null && source "$HOME/scripts/dominonew.sh"
+finish -s python_setup
+
+# completions
+source "$HOME/scripts/bash_completion.sh"
+install_bash_completions
+
+finish -s source_custom_scripts
+
 
 alias datify="$HOME/scripts/datify.sh"
-EMAIL_ADDRESS=matthew.hawthorn@spglobal.com
+
+case "$OS_TYPE" in
+    darwin*) export EMAIL_ADDRESS=matthew.hawthorn@spglobal.com ;;
+    linux*) export EMAIL_ADDRESS=hawthorn.matthew@gmail.com ;;
+esac
+
+finish -s bash_profile

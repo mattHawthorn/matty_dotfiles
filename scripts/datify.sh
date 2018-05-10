@@ -10,7 +10,7 @@ UNDO=0
 SAFE=1
 VERBOSE=0
 
-source "$(dirname "$BASH_SOURCE")/safely.sh"
+[ ! "$BASHUTILS_IMPORTED" == 1 ] && source "$(dirname "$BASH_SOURCE")/bashutils.sh"
 
 usage() {
   echo \
