@@ -37,12 +37,19 @@ RUNTIME_VAR_PREFIX=t__
 
 start() {
     eval "$RUNTIME_VAR_PREFIX$1=\$(ns_)"
-    echo "    STARTED $1"
+    echo "$(_time_report_indent)    STARTED $1"
+}
+
+_time_report_indent() {
+    local jobs=($(compgen -v $RUNTIME_VAR_PREFIX))
+    local njobs=${#jobs[@]}
+    printf '% '$((2 * $njobs))s ''
 }
 
 _time_report() {
     local mode=$1; shift
     local units=ms denom=1000 dec=3 label=RUNNING t
+    
     [ $mode == f ] && label=FINISHED
     case "$1" in
         -M) units=min; denom=600000000; dec=2; shift ;;
@@ -54,7 +61,7 @@ _time_report() {
     eval "t=\$(((\$(ns_)-\$$RUNTIME_VAR_PREFIX$1)/$denom))"
     [ ${#t} -le $dec ] && t=$(printf "%0$((dec+1))"d)
     [ $dec -gt 0 ] && t="${t::-$dec}.${t:$((${#t}-$dec)):$dec}"
-    echo "    $label $1: runtime $t$units"
+    echo "$(_time_report_indent)    $label $1: runtime $t$units"
     [ $mode == f ] && eval "unset $RUNTIME_VAR_PREFIX$1"
 }
 

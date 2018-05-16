@@ -20,15 +20,22 @@ trypy() {
 
 # conda-related aliases
 set_conda_env_aliases() {
-    local tmpfile=/tmp/conda_env_aliases
-    conda env list | 
+    if [ -z "$1" ]; then
+        local tmpfile=/tmp/conda_env_aliases
+        local remove=true
+    else
+        local tmpfile="$1"
+        [ -f "$tmpfile" ] && source "$tmpfile" && return
+        local remove=false
+    fi
+    local env version
+    conda env list | tail -n +3 |
         while read line; do
             env=$(echo "$line" | cut -f 1 -d ' ')
-            version="$(echo $env | grep -E '[23]\.?[4-7]?' | tr -cd 0-9)"
-            [ -z "$version" ] && continue
-            echo "alias py$version='source activate $env'" >> $tmpfile
+            [ ! -z "$env" ] && echo "alias pyenv_$env='source activate $env'" >> $tmpfile
         done
-    [ -f $tmpfile ] && source /tmp/conda_env_aliases && rm $tmpfile
+    [ -f "$tmpfile" ] && source "$tmpfile"
+    $remove && rm $tmpfile
     alias sa='source activate'
     alias sda='source deactivate'
     alias notebook='jupyter notebook'

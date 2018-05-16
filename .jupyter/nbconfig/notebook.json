@@ -16,7 +16,7 @@
     }
   },
   "Notebook": {
-    "Header": true,
+    "Header": false,
     "Toolbar": false
   }
 }

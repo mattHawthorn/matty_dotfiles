@@ -72,6 +72,7 @@ start source_custom_scripts
 
 # custom scripts/utils
 source "$HOME/scripts/clipboard.sh"
+source "$HOME/scripts/todo.sh"
 source "$HOME/scripts/mathutils.sh"
 source "$HOME/scripts/papertitle.sh"
 source "$HOME/scripts/fileutils.sh"
@@ -80,7 +81,7 @@ start python_setup
 source "$HOME/scripts/pyutils.sh"
 export PATH="$HOME/anaconda3/bin/:$PATH"
 set_python_dev_aliases
-set_conda_env_aliases
+set_conda_env_aliases ~/.conda_env_aliases
 # domino project start helper
 which domino > /dev/null && source "$HOME/scripts/dominonew.sh"
 finish -s python_setup
