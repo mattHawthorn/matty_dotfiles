@@ -5,7 +5,7 @@ install_bash_completions() {
         linux*) 
             BASHCOMPLETIONDIR="/etc/bash_completion.d"
             if [ -d $BASHCOMPLETIONDIR ]; then
-    		    for f in $(ls "$BASHCOMPLETIONDIR"); do source "$BASHCOMPLETIONDIR/$f"; done
+    		    . $BASHCOMPLETIONDIR/*
     		else
     		    unset  BASHCOMPLETIONDIR
     		fi

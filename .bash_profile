@@ -67,8 +67,6 @@ alias spglobalvpn='/opt/cisco/anyconnect/bin/vpn connect us-remote.spglobal.com/
 alias ll='ls -lF'
 alias la='ls -alF'
 
-alias tabcut=$'cut -d \'\t\' -f'
-alias spacecut="cut -d ' ' -f"
 
 start source_custom_scripts
 
