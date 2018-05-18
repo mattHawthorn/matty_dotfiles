@@ -71,11 +71,9 @@ alias la='ls -alF'
 start source_custom_scripts
 
 # custom scripts/utils
-source "$HOME/scripts/clipboard.sh"
-source "$HOME/scripts/todo.sh"
-source "$HOME/scripts/mathutils.sh"
-source "$HOME/scripts/papertitle.sh"
-source "$HOME/scripts/fileutils.sh"
+for module in shython clipboard todo mathutils papertitle fileutils; do
+    source "$HOME/scripts/$module.sh"
+done
 
 start python_setup
 source "$HOME/scripts/pyutils.sh"
