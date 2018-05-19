@@ -71,7 +71,7 @@ alias la='ls -alF'
 start source_custom_scripts
 
 # custom scripts/utils
-for module in shython clipboard todo mathutils papertitle fileutils; do
+for module in shython clipboard datify todo mathutils papertitle fileutils; do
     source "$HOME/scripts/$module.sh"
 done
 
@@ -90,8 +90,6 @@ install_bash_completions
 
 finish -s source_custom_scripts
 
-
-alias datify="$HOME/scripts/datify.sh"
 
 case "$OS_TYPE" in
     darwin*) export EMAIL_ADDRESS=matthew.hawthorn@spglobal.com ;;
