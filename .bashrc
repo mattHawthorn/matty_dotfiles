@@ -125,13 +125,6 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
 fi
 
 
-background() {
-    # run command in background and print PID
-    "$@" &
-    echo $!
-}
-
-
 # added by Anaconda3 4.4.0 installer
 export PATH="$HOME/anaconda3/bin:$PATH"
 
@@ -154,19 +147,3 @@ SPARK_HOME="/opt/spark-1.6.1-bin-hadoop2.6/"
 # gitprompt setup
 GIT_PROMPT_ONLY_IN_REPO=1
 source ~/.bash-git-prompt/gitprompt.sh
-
-
-# custom scripts/utils
-source "$HOME/scripts/bashutils.sh"
-source "$HOME/scripts/clipboard.sh"
-source "$HOME/scripts/safely.sh"
-source "$HOME/scripts/mathutils.sh"
-source "$HOME/scripts/papertitle.sh"
-source "$HOME/scripts/fileutils.sh"
-source "$HOME/scripts/pyutils.sh"
-
-set_python_dev_aliases
-set_conda_env_aliases
-
-alias datify="$HOME/scripts/datify.sh"
-
