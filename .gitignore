@@ -1,3 +1,6 @@
 .vim/bundle
 .idea
 .atom/blob-store
+
+# Mac OS
+.DS_Store
