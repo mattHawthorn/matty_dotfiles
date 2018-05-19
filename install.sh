@@ -16,14 +16,11 @@ TMPFILE="$(mktemp)"
 find $DOTFILESDIR -maxdepth 1 -name '.*' -not -name '.gitignore' -not -name '.git' -exec echo {} \; > $TMPFILE
 echo "$DOTFILESDIR/scripts" >> $TMPFILE
 
-pushd ~
+pushd ~ >/dev/null
 for line in $(cat $TMPFILE | sort); do prompt_symlink "$line"; done;
 rm $TMPFILE
 
-[ -e .bash_profile ] && source .bash_profile
-popd
-
-echo
+[ -e .bash_profile ] && echo $'\n'"Run 'source ~/.bash_profile' to take advantage of your new shell configuration"$'\n'
+popd >/dev/null
 echo Finished!
 echo
-
