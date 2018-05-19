@@ -19,6 +19,10 @@ quietly() {
     if [[ "$QUIET" == "$UNQUIETCODE" ]]; then "$@"; else "$@" > /dev/null; fi
 }
 
+background() {
+    "$@" &
+    echo $!
+}
 
 # run time reporting utils
 ns_() {
