@@ -319,8 +319,7 @@ _nextfifo() {
 }
 
 _allfifos() {
-    try: ls $FIFO_PREFIX.*
-    except: pass
+    ls $FIFO_PREFIX.* 2>/dev/null
 }
 
 _rmfifos() {

@@ -41,7 +41,7 @@ RUNTIME_VAR_PREFIX=t__
 
 start() {
     eval "$RUNTIME_VAR_PREFIX$1=\$(ns_)"
-    echo "$(_time_report_indent)    STARTED $1"
+    echo "$(_time_report_indent)  STARTED $1"
 }
 
 _time_report_indent() {
