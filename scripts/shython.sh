@@ -22,6 +22,8 @@ alias print="printf '%s\n'"
 
 alias global='declare -g'
 
+alias tuple=list
+
 alias False=false
 
 alias True=true
@@ -626,6 +628,7 @@ raise() {
     fi
     echo "$errname: $ERROR_MSG"
     return $code
+    rm $SHYTHON_ERRFILE
 }
 
 raise_() {
