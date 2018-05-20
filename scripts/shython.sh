@@ -5,7 +5,7 @@
 #############
 
 FIELD_SEP=$'\t'
-FIFO_PREFIX=$(mktemp -u)
+FIFO_PREFIX=$(mktemp)
 
 
 ###########
@@ -21,6 +21,20 @@ alias cut_="cut -d '$FIELD_SEP'"
 alias print="printf '%s\n'"
 
 alias global='declare -g'
+
+alias False=false
+
+alias True=true
+
+pass() {
+    return
+}
+
+_parse_identifiers() {
+    while [ $# -gt 0 ] && [ "${1%:}" == "$1" ]; do echo "$1"; shift; done
+    [ "$1" == ":" ] || [ $# -eq 0 ] && return
+    echo "${1%:}"
+}
 
 
 #################
@@ -84,16 +98,9 @@ type_() {
 # OPERATORS #
 #############
 
-...() { 
+# readable math
+.:() { 
     echo $(( $@ ));
-}
-
-int.infix() {
-    echo $(( $2 $1 $3 ))
-}
-
-int.prefix() {
-    echo $(( $1 $2 ))
 }
 
 itemgetter() {
@@ -117,6 +124,14 @@ int() {
     declare -ig $1=$2
 }
 
+int.infix() {
+    echo $(( $2 $1 $3 ))
+}
+
+int.prefix() {
+    echo $(( $1 $2 ))
+}
+
 alias int.add="int.infix '+'"
 
 alias int.sub="int.infix '-'"
@@ -138,15 +153,24 @@ alias int.mul="int.infix '*'"
 alias int.not="int.prefix '~'"
 
 
-##########
-# ARRAYS #
-##########
+#########
+# LISTS #
+#########
 
 list() {
     local __=$1; shift
     unset $__
     global -a $__
     eval "$__=(\"\$@\")"
+}
+
+list.contains() {
+    values $1 | {
+        while read line; do
+            [ "$line" == "$2" ] && return
+        done
+    }
+    return 1
 }
 
 len() {
@@ -242,7 +266,7 @@ str.split() {
 
 str.replace() {
     local pat="$1" rep="$2"; shift 2
-    echo "$1" | sed 's/'"$pat"/"$rep"'/g'
+    echo "$@" | sed 's/'"$pat"/"$rep"'/g'
 }
 
 str.startswith() {
@@ -276,8 +300,12 @@ _nextfifo() {
         echo 0; return
     fi
     local fifos=($(_allfifos))
-    local lastfifo="${fifos[-1]}"
-    lastfifo="${lastfifo##*.}"
+    if [ ${#fifos[@]} -gt 0 ]; then
+        local lastfifo="${fifos[-1]}"
+        lastfifo="${lastfifo##*.}"
+    else
+        lastfifo=0
+    fi
     local n i nextfifo
     [ -z "$1" ] && n=1 || n=$1
     for (( i=1; i <=n; i++ )); do
@@ -291,7 +319,8 @@ _nextfifo() {
 }
 
 _allfifos() {
-    ls $FIFO_PREFIX.* 2>/dev/null || return
+    try: ls $FIFO_PREFIX.*
+    except: pass
 }
 
 _rmfifos() {
@@ -362,15 +391,9 @@ list.valzip() {
 }
 
 iter.zip() {
-    local __=$(mktemp -u) i
-    local fifos=(
-        $(for (( i=1; i <= $#; i++ )); do 
-            mkfifo $__.$i && echo $__.$i; 
-        done
-        )
-    )
-    for (( i=1; i <= $#; i++ )); do ( eval "${@:$i:1}" > $__.$i & ); done
-    ( paste -d "$FIELD_SEP" "${fifos[@]}" )
+    local fifos=($(_nextfifo $#))
+    for (( i=1; i <= $#; i++ )); do ( ${@:i:1} >${fifos[$((i-1))]} & ); done
+    ( paste -d "$FIELD_SEP" ${fifos[@]} )
     for i in "${fifos[@]}"; do rm -f "$i"; done
 }
 
@@ -393,15 +416,43 @@ repeat() {
 }
 
 
+##########
+# LAMBDA #
+##########
+
+lambda() {
+    local varnames=($(_parse_identifiers "$@"))
+    shift $(len varnames)
+    [ "$1" == ':' ] && shift
+    local expression="$1"; shift
+    for (( i=0; i<${#varnames[@]}; i++ )); do
+        eval "local ${varnames[i]}=$1"; shift
+        # eval echo "${varnames[i]}: \$${varnames[i]}"
+    done
+    # echo "$expression"
+    eval "$expression"
+}
+
+
 ###############
 # COMBINATORS #
 ###############
 
 map() {
-    local cmd="$1" iter __
-    [ ! -z $2 ] && iter="values $2" || iter="cat -"
+    local cmd="$1" iter __; shift
+    if [ "$cmd" == lambda ]; then
+        local varnames=($(_parse_identifiers $@))
+        shift $(len varnames)
+        [ "$1" == ":" ] && shift
+        cmd="lambda ${varnames[@]} : '$1'"; shift
+    fi
+    if [ $# -eq 0 ]; then 
+        iter="cat -"
+    else
+        iter="values $1"
+    fi
     $iter | {
-        while read __; do $cmd "$__"; done
+        while read __; do eval "$cmd $__" 2>/dev/null; done
     }
 }
 
@@ -528,30 +579,62 @@ declare -gA ERROR_CODES=(
 dict EXCEPTIONS $(iter.zip 'values ERROR_CODES' 'keys ERROR_CODES')
 
 
-try:() {
-    "$@"
+SHYTHON_ERRFILE=$(mktemp)
+SHYTHON_ERRCODE=0
+
+
+_rm_errfile() {
+    [ -f $SHYTHON_ERRFILE ] && rm $SHYTHON_ERRFILE
 }
 
-except:() {
-    local status=$?
-    [ $status == 0 ] && return
-    "$@"
+try:() {
+    "$@" 2>$SHYTHON_ERRFILE
+    SHYTHON_ERRCODE=$?
 }
 
 except() {
-    local status=$?
-    local errname="${1%:}"; shift
-    local code=${ERROR_CODES[$errname]}
-    [ "$status" == "$code" ] && "$@" || return $status
+    local errname
+    [ $SHYTHON_ERRCODE -eq 0 ] && return
+    
+    errnames=($(_parse_identifiers $@))
+    shift $(len errnames)
+    [ "$1" == ':' ] && shift
+    
+    for (( i=0; i<${#errnames[@]}; i++)); do
+        if [ $(get ERROR_CODES "${errnames[i]}") -eq $SHYTHON_ERRCODE ]; then
+            SHYTHON_ERRCODE=0
+            "$@" 2>$SHYTHON_ERRFILE
+            raise_ $?
+            return $?
+        fi
+    done
+}
+
+except:() {
+    [ $SHYTHON_ERRCODE -eq 0 ] && return
+    SHYTHON_ERRCODE=0
+    "$@"
+    return $?
 }
 
 raise() {
     local errname="$1"; shift
     local code=${ERROR_CODES[$errname]}
-    [ $# -gt 0 ] && ERROR_MSG="$@"
-    echo "$errname( $ERROR_MSG )"
+    if [ $# -gt 0 ]; then 
+        ERROR_MSG="$@"
+    else
+        [ -f $SHYTHON_ERRFILE ] && ERROR_MSG="$(cat $SHYTHON_ERRFILE)"
+    fi
+    echo "$errname: $ERROR_MSG"
     return $code
 }
+
+raise_() {
+    local code="$1"; shift
+    local name="${EXCEPTIONS[$code]}"
+    [ $# -gt 0 ] && raise "$name" "$@" || raise "$name"
+}
+
 
 ###############
 # ERROR TRAPS #
@@ -560,4 +643,6 @@ raise() {
 # On error, print a readable name to stderr
 trap 'raise $(get EXCEPTIONS $?)' >&2 ERR
 
-trap 'rm $(_allfifos)' EXIT
+trap _rmfifos EXIT
+trap _rm_errfile EXIT
+

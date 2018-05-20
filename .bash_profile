@@ -96,4 +96,16 @@ case "$OS_TYPE" in
     linux*) export EMAIL_ADDRESS=hawthorn.matthew@gmail.com ;;
 esac
 
+# .profile
+case "$OSTYPE" in
+    linux*)
+        if [ ! -t 0 ] && [ -n "$BASH" ] && [ -r ~/.bashrc ]; then
+            start source_bashrc
+            . ~/.bashrc
+            finish -d source_bashrc
+        fi
+        ;;
+esac
+
 finish -s bash_profile
+

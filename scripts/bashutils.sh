@@ -65,7 +65,7 @@ _time_report() {
     eval "t=\$(((\$(ns_)-\$$RUNTIME_VAR_PREFIX$1)/$denom))"
     [ ${#t} -le $dec ] && t=$(printf "%0$((dec+1))"d)
     [ $dec -gt 0 ] && t="${t::-$dec}.${t:$((${#t}-$dec)):$dec}"
-    echo "$(_time_report_indent)    $label $1: runtime $t$units"
+    echo "$(_time_report_indent)  $label $1: runtime $t$units"
     [ $mode == f ] && eval "unset $RUNTIME_VAR_PREFIX$1"
 }
 
@@ -96,3 +96,4 @@ assignfunc() {
 }
 
 export BASHUTILS_IMPORTED=1
+

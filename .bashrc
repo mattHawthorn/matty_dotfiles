@@ -147,3 +147,13 @@ SPARK_HOME="/opt/spark-1.6.1-bin-hadoop2.6/"
 # gitprompt setup
 GIT_PROMPT_ONLY_IN_REPO=1
 source ~/.bash-git-prompt/gitprompt.sh
+
+# bash_profile if interactive terminal- This seems necessary for basic terminal
+# sessions on Ubuntu
+case "$OSTYPE" in
+    linux*)
+        [ -t 0 ] && [ -n "$BASH" ] && [ -r ~/.bash_profile ] && 
+        source ~/.bash_profile
+        ;;
+esac
+
