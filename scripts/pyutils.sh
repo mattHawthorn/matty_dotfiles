@@ -1,3 +1,47 @@
+# Python helper-outers
+
+read -r -d '' PY_NOT_STDLIB_SCRIPT << EOF
+import sys, os
+dirs = []
+for n in sys.path:
+    if n.endswith("/site-packages") or n.endswith("/lib-dynload") or n.endswith("/dist-packages"):
+        break
+    dirs.append(n)
+
+def is_stdlib(name):
+    return any(os.path.exists(os.path.join(d, name)) or os.path.isfile(os.path.join(d, name + '.py')) for d in dirs)
+
+for f in sys.argv[1:]:
+    if f in sys.builtin_module_names:
+        continue
+    try:
+        mod = __import__(f)
+    except:
+        print(f)
+        print(f, file=sys.stderr)
+    else:
+        if not is_stdlib(f):
+            print(f)
+EOF
+
+pydeps() {
+    local dir="." interpreter="python" mods
+    [ $# -gt 0 ] && dir="$1"
+    [ $# -gt 1 ] && interpreter="$2"
+    local stdlibdir="$($interpreter -c 'import os; print(os.path.dirname(os.__file__))')"
+
+    local pyscript
+
+    mods="$(
+    find "$dir" -name '*.py' -type f -exec grep -oE '^(from|import)\s+([a-zA-Z_][a-zA-Z0-9_]*)' {} \; |
+        sed -E 's/(^(from|import)\s+)//' | sort | uniq | {
+            while read line; do [ ! "$line" == "$dir" ] && echo "$line"; done
+        }
+    )"
+
+    $interpreter -c "$PY_NOT_STDLIB_SCRIPT" $mods
+}
+
 # Python starter-uppers
 
 trypy() {
