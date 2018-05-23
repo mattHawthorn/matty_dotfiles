@@ -13,10 +13,10 @@ usage() {
 	echo "Usage: todo (finish|drop|rm|resume|revive|bump|push) [ -E ]  TODO_LIST_QUERY"
     echo "       todo (list|ls)  [ [ -E ] TODO_LIST_QUERY ]"
     echo "       todo (finished|done)  [ [ -E ] DONE_LIST_QUERY ]"
-    echo "       todo snapshot"
+    echo "       todo next"
     echo "       todo add  LIST_ITEM"
     echo "       todo reorder [ ROW_NUM1 [ROW_NUM2 [ ... ] ] ]"
-    echo "       todo next"
+    echo "       todo snapshot"
 }
 
 todo() {
