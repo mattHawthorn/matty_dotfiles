@@ -1,15 +1,22 @@
+#!/usr/bin/env bash
+
 # Python helper-outers
 
-read -r -d '' PY_NOT_STDLIB_SCRIPT << EOF
+_set_py_not_stdlib_script() {
+local IFS=''
+PY_NOT_STDLIB_SCRIPT="$(while read  line; do echo "$line"; done <<EOF
 import sys, os
 dirs = []
 for n in sys.path:
-    if n.endswith("/site-packages") or n.endswith("/lib-dynload") or n.endswith("/dist-packages"):
+    if n.endswith("/site-packages") or n.endswith("/dist-packages"):
         break
     dirs.append(n)
 
 def is_stdlib(name):
-    return any(os.path.exists(os.path.join(d, name)) or os.path.isfile(os.path.join(d, name + '.py')) for d in dirs)
+    return any(os.path.exists(os.path.join(d, name)) or
+               os.path.isfile(os.path.join(d, name + '.py')) or
+               any(n.startswith(name + '.') for n in os.listdir(d))
+               for d in dirs if os.path.isdir(d))
 
 for f in sys.argv[1:]:
     if f in sys.builtin_module_names:
@@ -17,16 +24,23 @@ for f in sys.argv[1:]:
     try:
         mod = __import__(f)
     except:
-        print(f)
-        print(f, file=sys.stderr)
+        pass
+        # print("Not importable: {}".format(f), file=sys.stderr)
     else:
         if not is_stdlib(f):
             print(f)
 EOF
+)"
+}
+_set_py_not_stdlib_script
+
 
 pydeps() {
+    local include_stdlib=false
+    if [ $1 == "-s" ]; then include_stdlib=true; shift; fi
     local dir="." interpreter="python" mods
     [ $# -gt 0 ] && dir="$1"
+    local modname="$(basename $dir)"
     [ $# -gt 1 ] && interpreter="$2"
     local stdlibdir="$($interpreter -c 'import os; print(os.path.dirname(os.__file__))')"
 
@@ -35,11 +49,15 @@ pydeps() {
     mods="$(
     find "$dir" -name '*.py' -type f -exec grep -oE '^(from|import)\s+([a-zA-Z_][a-zA-Z0-9_]*)' {} \; |
         sed -E 's/(^(from|import)\s+)//' | sort | uniq | {
-            while read line; do [ ! "$line" == "$dir" ] && echo "$line"; done
+            while read line; do [ $line == $modname ] || echo $line; done
         }
     )"
 
-    $interpreter -c "$PY_NOT_STDLIB_SCRIPT" $mods
+    if $include_stdlib; then
+        for mod in $mods; do echo mod; done
+    else
+        $interpreter -c "$PY_NOT_STDLIB_SCRIPT" $mods
+    fi
 }
 
 # Python starter-uppers
