@@ -3,7 +3,7 @@
 TODO_FILE=~/.todo/.todo
 DONE_FILE=~/.todo/.done
 TODO_DATE_FMT='%F@%H:%M'
-TODO_CMDS="add finish drop rm resume next list ls bump push reorder finished done"
+TODO_CMDS="add finish drop rm resume next list ls bump push reorder finished done snapshot"
 
 [ ! -d $(dirname $TODO_FILE) ] && mkdir $(dirname $TODO_FILE)
 [ ! -e $TODO_FILE ] && touch $TODO_FILE
@@ -13,6 +13,7 @@ usage() {
 	echo "Usage: todo (finish|drop|rm|resume|revive|bump|push) [ -E ]  TODO_LIST_QUERY"
     echo "       todo (list|ls)  [ [ -E ] TODO_LIST_QUERY ]"
     echo "       todo (finished|done)  [ [ -E ] DONE_LIST_QUERY ]"
+    echo "       todo snapshot"
     echo "       todo add  LIST_ITEM"
     echo "       todo reorder [ ROW_NUM1 [ROW_NUM2 [ ... ] ] ]"
     echo "       todo next"
@@ -85,14 +86,16 @@ todo() {
             else
                 n=1
             fi
-            
+
+            local ing="ing"
+            [ "$cmd" == drop ] && ing="ping"
             if ! $all; then
                 local item=$(grep $grepargs "$item" $TODO_FILE | head -$n | tail -1)
-                echo "    ${cmd%e}""ing '$item' ..."
+                echo "    ${cmd%e}""$ing '$item' ..."
                 item="^$item\$"
                 grepargs="${grepargs%-E} -E"
             else
-                echo "    ${cmd%e}""ing $ntasks ..."
+                echo "    ${cmd%e}""$ing $ntasks ..."
             fi
             
             local tmpfile=$(mktemp)
@@ -190,7 +193,12 @@ todo() {
             cat $tmpfile > $TODO_FILE && rm -f $tmpfile
             echo "Reordered:$reorder""successfully!"
             ;;
-        
+        snapshot)
+            local fn
+            for fn in "$TODO_FILE" "$DONE_FILE"; do
+                cat $fn > "$fn"".snapshot""$(date +$TODO_DATE_FMT)"
+            done
+            ;;
         -h|--help) usage
             ;;
         
@@ -207,20 +215,20 @@ todo() {
 _todo(){
     local last="${COMP_WORDS[$COMP_CWORD]}"
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=($(compgen -W "$TODO_CMDS" "$last"))
+        COMPREPLY=($(compgen -W "$TODO_CMDS" "$last" | sort))
     elif [ $COMP_CWORD -gt 1 ]; then
         case "${COMP_WORDS[1]}" in
             finish|drop|rm|list|ls|bump|push)
-                COMPREPLY=($(compgen -W "$(cat $TODO_FILE)" "$last"))
+                COMPREPLY=($(compgen -W "$(cat $TODO_FILE)" "$last" | sort))
                 ;;
             resume|finished)
-                COMPREPLY=($(compgen -W "$(cat $DONE_FILE)" "$last"))
+                COMPREPLY=($(compgen -W "$(cat $DONE_FILE)" "$last" | sort))
                 ;;
-            reorder) COMPREPLY=($(compgen -W "$(seq 1 $(wc -l $TODO_FILE))" "$last"))
+            reorder) COMPREPLY=($(compgen -W "$(seq 1 $(wc -l $TODO_FILE  | cut -f 1 -d ' ') | sort -n)" "$last"))
                 return
                 ;;
         esac
     fi
 }
 
-complete -o nospace -F _todo todo
+complete -o nospace -o nosort -F _todo todo
