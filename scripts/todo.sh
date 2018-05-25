@@ -152,6 +152,7 @@ todo() {
                 return 1
             fi
             
+            local ntodo=$(wc -l $TODO_FILE | cut -f 1 -d ' ')
             local tmpfile=$(mktemp) ntasks=$(wc -l $TODO_FILE | cut -f 1 -d ' ') reorder=$'\n' i=1 n
             local args=($(echo $@ | tr ' ' $'\n' | sort -n | uniq))
             if [ ${#args[@]} -lt $# ]; then
@@ -176,22 +177,24 @@ todo() {
                     return 1
                 fi
             done
-            
-            n=0
+            n=1
             cat $TODO_FILE | {
                 while read line; do
-                    if [ ${#args[@]} -eq 0 ] || [ $((n + 1)) -lt ${args[1]} ]; then
-                        echo write
+                    if [ ${#args[@]} -eq 0 ] || [ $n -lt ${args[0]} ]; then
                         echo "$line" >> $tmpfile
-                    elif [ $n -eq "${args[$n]}" ]; then
-                        echo skip
+                    elif [ ${#args[@]} -eq 0 ]; then
+                        args=()
+                    elif [ $n -eq ${args[0]} ]; then
                         args=(${args[@]:1:$#})
                     fi
                     ((n++))
                 done
-            }
-            cat $tmpfile > $TODO_FILE && rm -f $tmpfile
-            echo "Reordered:$reorder""successfully!"
+            } && cat $tmpfile > $TODO_FILE 
+            local ntodonow=$(wc -l $TODO_FILE | cut -f 1 -d ' ')
+            [ $ntodo -eq $ntodonow ] && rm -f $tmpfile || 
+                echo "Something's wrong- $ntodo lines in the original .todo and $ntodonow in the new version; "\
+                     "you may recover your .todo from $tmpfile"
+            echo $'\n'"Reordered:$reorder""successfully!"$'\n'
             ;;
         snapshot)
             local fn
