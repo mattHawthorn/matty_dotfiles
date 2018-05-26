@@ -1,11 +1,158 @@
 #!/usr/bin/env bash
 
+# TODO:
+
+#    ArithmeticError
+#    AssertionError
+#   AttributeError
+#    BaseException
+#    BlockingIOError
+#    BrokenPipeError
+#    BufferError
+#    BytesWarning
+#    ChildProcessError
+#    ConnectionAbortedError
+#    ConnectionError
+#    ConnectionRefusedError
+#    ConnectionResetError
+#    DeprecationWarning
+#    EOFError
+#    Ellipsis
+#    EnvironmentError
+#    Exception
+#    False
+#    FileExistsError
+#    FileNotFoundError
+#    FloatingPointError
+#    FutureWarning
+#    GeneratorExit
+#    IOError
+#    ImportError
+#    ImportWarning
+#    IndentationError
+#    IndexError
+#    InterruptedError
+#    IsADirectoryError
+#    KeyError
+#    KeyboardInterrupt
+#    LookupError
+#    MemoryError
+#    ModuleNotFoundError
+#    NameError
+#    None
+#    NotADirectoryError
+#    NotImplemented
+#    NotImplementedError
+#    OSError
+#    OverflowError
+#    PendingDeprecationWarning
+#    PermissionError
+#    ProcessLookupError
+#    RecursionError
+#    ReferenceError
+#    ResourceWarning
+#    RuntimeError
+#    RuntimeWarning
+#    StopAsyncIteration
+#    StopIteration
+#    SyntaxError
+#    SyntaxWarning
+#    SystemError
+#    SystemExit
+#    TabError
+#    TimeoutError
+#    True
+#    TypeError
+#    UnboundLocalError
+#    UnicodeDecodeError
+#    UnicodeEncodeError
+#    UnicodeError
+#    UnicodeTranslateError
+#    UnicodeWarning
+#    UserWarning
+#    ValueError
+#    Warning
+#    ZeroDivisionError
+#    all
+#    any
+#    ascii
+#    bin
+#    bool
+#    bytearray
+#    bytes
+#    callable
+#    chr
+#    classmethod
+#    compile
+#    complex
+#    copyright
+#    credits
+#    delattr
+#    dict
+#    dir
+#    divmod
+#    enumerate
+#    eval
+#    exec
+#    exit
+#    filter
+#    float
+#    format
+#    frozenset
+#    getattr
+#    globals
+#    hasattr
+#    hash
+#    help
+#    hex
+#    id
+#    input
+#    int
+#    isinstance
+#    issubclass
+#    iter
+#    len
+#    license
+#    list
+#    locals
+#    map
+#    max
+#    memoryview
+#    min
+#    next
+#    object
+#    oct
+#    open
+#    ord
+#    pow
+#    print
+#    property
+#    quit
+#    range
+#    repr
+#    reversed
+#    round
+#    set
+#    setattr
+#    slice
+#    sorted
+#    staticmethod
+#    str
+#    sum
+#    super
+#    tuple
+#    type
+#    vars
+#    zip
+
+
 #############
 # CONSTANTS #
 #############
 
 FIELD_SEP=$'\t'
 FIFO_PREFIX=$(mktemp)
+DEFAULT_IFS="$IFS"
 
 
 ###########
@@ -32,12 +179,24 @@ pass() {
     return
 }
 
+del () {
+  unset "$1"
+}
+
 _parse_identifiers() {
     while [ $# -gt 0 ] && [ "${1%:}" == "$1" ]; do echo "$1"; shift; done
     [ "$1" == ":" ] || [ $# -eq 0 ] && return
     echo "${1%:}"
 }
 
+_iterargs() {
+    # inside a function, use `_iterargs "$@" <&0 | { while read line; do ... }`
+    if [ $# -gt 0 ]; then
+        for ((i=1;i<=$#;i++)); do echo "${@:$i:1}"; done;
+    else
+        cat -
+    fi
+}
 
 #################
 # INTROSPECTION #
@@ -49,13 +208,38 @@ _public_fns() {
 
 _typeflags() {
     local flags=$(declare -p $1)
-    local flags=${flags##declare -}
+    flags=${flags#declare -}
     echo ${flags%% *}
 }
 
 isinstance() {
-    local flags=$(_typeflags $1)
+    local varname=$1 arg1 arg2; shift
+    arg1=$(_typeflags $varname) >/dev/null 2>/dev/null || unset arg1
+    arg2=$(type $varname) "$(type $1)" >/dev/null 2>/dev/null || unset arg2
+
+    [ ${arg1+x} ] && [ ${arg2+x} ] &&
+        raise NameError "$1 does not identify any value, function, command, or alias"
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            str|list|tuple|dict|int)
+                [ ${arg1+x} ] && continue
+                _isinstance_var $(_typeflags $varname) $1 && return 0
+                ;;
+            function|builtin|alias|executable)
+                [ ${arg2+x} ] && continue
+                _isinstance_callable "$(type $1)" $1 && return 0
+                ;;
+        esac
+        shift
+    done
+    return 1
+}
+
+_isinstance_var() {
+    local flags=$1
     local first=${flags:0:1}
+
     case $2 in
         str)
             case $first in
@@ -77,6 +261,20 @@ isinstance() {
                 i) return 0 ;;
                 *) return 1 ;;
             esac ;;
+    esac
+}
+
+_isinstance_callable() {
+    case $2 in
+        function)
+            declare -f $2 >/dev/null 2>/dev/null
+            return $? ;;
+        builtin)
+            [ "$dec" == "${1%% builtin}" ] && return 1 || return 0 ;;
+        alias)
+            [ "$dec" == "${1%%*alias}" ] && return 1 || return 0 ;;
+        executable)
+            [ "$dec" == "${1#$ is}" ] && return 1 || return 0 ;;
         *)
             raise ValueError "must pass identifier, typename to isinstance()" ;;
     esac
@@ -84,15 +282,88 @@ isinstance() {
 
 type_() {
     # TODO: functions
-    local flags=$(_typeflags $1) || local funcname=
+    local flags=$(_typeflags $1)
     local first=${flags:0:1}
     case $first in
         a) echo list ;;
-        A) echo dict ;;
+        A) [ "${flags##*i}" == "$flags" ] && echo dict || echo Counter ;;
         -|u|l) echo str ;;
         i) echo int ;;
-        *) 
+        *) ;;
     esac
+}
+
+callable() {
+    isinstance "$1" function builtin alias ececutable
+}
+
+notnone() {
+    eval "[ \${$1+x} ]"
+}
+
+
+##############
+# REFERENCES #
+##############
+
+declare -A REFERENCES
+
+resolve() {
+    local name="$1"
+    while [ ${REFERENCES[$name]+x} ]; do
+        name="${REFERENCES[$name]}"
+    done
+    echo "$name"
+}
+
+is_assignment() {
+    local cmd="$1"
+    echo "$cmd" | grep -qE '^[a-zA-Z_][\w]*=' && echo "$cmd"
+}
+
+is_ref() {
+    [ "${1#::}" != "$1" ]
+}
+
+get_ref() {
+    echo "${1#::}"
+}
+
+redirect_assignment() {
+    local cmd="$1"
+    if is_assignment "$cmd"; then
+        local ref="${cmd##*=}"
+        if is_ref "$ref"; then
+            local name="${cmd%%=*}"
+            ref="$(get_ref "$ref")"
+            REFERENCES["$name"]="$ref"
+        fi
+    fi
+}
+
+trap 'redirect_assignment "$BASH_COMMAND"' DEBUG
+
+
+##############
+# DECORATORS #
+##############
+
+:@:() {
+    local dec=$1; shift
+    local IFS='' tmpfile=$(mktemp)
+    local funcdef="$(cat -)"
+    local funcbody="${funcdef#*\(\)}"
+    echo "$funcbody"
+    local funcname=${funcdef%"$funcbody"}
+    funcbody="$(echo "$funcbody" | sed -E 's/^\s*\{|\}\s*$//' | grep -v '^\s*$')"
+    echo "$funcbody"
+    local newfuncbody="$($dec "$funcbody" "$@")"
+    local newfuncdef="$funcname"$' {\n'"$newfuncbody"$'\n}'
+    echo "$newfuncdef"
+}
+
+null_decorator() {
+    printf '%s\n' "$1"
 }
 
 
@@ -101,12 +372,26 @@ type_() {
 #############
 
 # readable math
-.:() { 
+.:() {
     echo $(( $@ ));
 }
 
 itemgetter() {
-    get $2 "$1"
+    getitem $2 "$1"
+}
+
+getitem() {
+    eval "[ \"\${$1["$2"]}\" ] && echo \"\${$1["$2"]}\" || raise KeyError '$2' is not in '$1'"
+}
+
+get() {
+    eval "[ \"\${$1["$2"]}\" ] && echo \"\${$1["$2"]}\" || echo \"$3\""
+}
+
+setitem() {
+    echo "$2"
+    echo "$3"
+    eval $1["$2"]=\""$3"\"
 }
 
 bool(){
@@ -197,11 +482,14 @@ dict() {
     local __=$1; shift
     unset $__
     global -A $__
-    while [ ! -z "$1" ]; do eval "$__["$1"]='"$2"'"; shift 2; done
+    while [ $# -gt 0 ]; do eval "$__["$1"]='"$2"'"; shift 2; done
 }
 
-get() {
-    eval "echo \"\${$1["$2"]}\""
+Counter() {
+  local __=$1; shift
+  unset $__
+  global -Ai $__
+  while [ $# -gt 0 ]; do eval "$__["$1"]+=1"; shift; done
 }
 
 keys() {
@@ -284,8 +572,13 @@ str.iter() {
     for (( i=0; i< $(str.len $1); i++ )); do eval echo "\${$1:$i:1}"; done
 }
 
-str.len() {
+str.len_() {
     eval "echo \${#$1}"
+}
+
+str.len_() {
+    local s="$1"
+    echo "${#$1}"
 }
 
 
@@ -331,7 +624,7 @@ _rmfifos() {
 _tofifos() {
     local firstfifo=$(_nextfifo) newfifo
     local fifos=(
-        $(for (( i=0; i < $#; i++ )); do 
+        $(for (( i=0; i < $#; i++ )); do
             newfifo=$FIFO_PREFIX.$((firstfifo + i))
             # mkfifo $newfifo && echo $newfifo;
             echo $newfifo
@@ -447,7 +740,7 @@ map() {
         [ "$1" == ":" ] && shift
         cmd="lambda ${varnames[@]} : '$1'"; shift
     fi
-    if [ $# -eq 0 ]; then 
+    if [ $# -eq 0 ]; then
         iter="cat -"
     else
         iter="values $1"
@@ -483,31 +776,31 @@ declare -gA ERROR_CODES=(
     [FloatingPointError]=10
     [ZeroDivisionError]=10
     [OverflowError]=10
-    
+
     [ValueError]=20
     [TypeError]=21
     [AttributeError]=22
     [IndexError]=23
     [KeyError]=24
     [LookupError]=25
-    
+
     [EnvironmentError]=30
     [ModuleNotFoundError]=31
     [NameError]=32
     [NotImplementedError]=33
     [ReferenceError]=34
     [UnboundLocalError]=35
-    
+
     [ImportError]=40
     [IndentationError]=41
     [SyntaxError]=42
     [TabError]=43
-    
+
     [UnicodeDecodeError]=50
     [UnicodeEncodeError]=51
     [UnicodeError]=52
     [UnicodeTranslateError]=53
-    
+
     [BlockingIOError]=60
     [BrokenPipeError]=61
     [BufferError]=62
@@ -517,33 +810,33 @@ declare -gA ERROR_CODES=(
     [IOError]=66
     [IsADirectoryError]=67
     [NotADirectoryError]=68
-    
+
     [ChildProcessError]=70
     [InterruptedError]=71
     [OSError]=72
     [ProcessLookupError]=73
     [SystemError]=74
     [PermissionError]=75
-    
+
     [ConnectionAbortedError]=80
     [ConnectionError]=81
     [ConnectionRefusedError]=82
     [ConnectionResetError]=83
-    
+
     [MemoryError]=90
     [RecursionError]=91
     [TimeoutError]=92
-    
+
     [AssertionError]=101
     [RuntimeError]=102
-    
+
     [Exception]=1
     [ShellBuiltinError]=2
-    
+
     [CommandNotFound]=127
     [CommandCannotExecute]=126
     [InvalidExitArgument]=128
-    
+
     [Fatal-SIGHUP]=129
     [Fatal-KeyboardInterrupt-SIGINT]=130
     [Fatal-SIGQUIT]=131
@@ -596,11 +889,11 @@ try:() {
 except() {
     local errname
     [ $SHYTHON_ERRCODE -eq 0 ] && return
-    
+
     errnames=($(_parse_identifiers $@))
     shift $(len errnames)
     [ "$1" == ':' ] && shift
-    
+
     for (( i=0; i<${#errnames[@]}; i++)); do
         if [ $(get ERROR_CODES "${errnames[i]}") -eq $SHYTHON_ERRCODE ]; then
             SHYTHON_ERRCODE=0
@@ -621,7 +914,7 @@ except:() {
 raise() {
     local errname="$1"; shift
     local code=${ERROR_CODES[$errname]}
-    if [ $# -gt 0 ]; then 
+    if [ $# -gt 0 ]; then
         ERROR_MSG="$@"
     else
         [ -f $SHYTHON_ERRFILE ] && ERROR_MSG="$(cat $SHYTHON_ERRFILE)"
@@ -647,4 +940,3 @@ trap 'raise $(get EXCEPTIONS $?)' >&2 ERR
 
 trap _rmfifos EXIT
 trap _rm_errfile EXIT
-
