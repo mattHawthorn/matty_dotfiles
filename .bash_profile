@@ -71,9 +71,11 @@ alias la='ls -alF'
 start source_custom_scripts
 
 # custom scripts/utils
-for module in shython clipboard datify todo mathutils papertitle fileutils; do
+for module in clipboard datify todo mathutils papertitle fileutils; do
     source "$HOME/scripts/$module.sh"
 done
+
+alias shython='source $HOME/scripts/shython.sh'
 
 start python_setup
 source "$HOME/scripts/pyutils.sh"
@@ -108,4 +110,3 @@ case "$OSTYPE" in
 esac
 
 finish -s bash_profile
-

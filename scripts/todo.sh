@@ -199,7 +199,7 @@ todo() {
         snapshot)
             local fn
             for fn in "$TODO_FILE" "$DONE_FILE"; do
-                cat $fn > "$fn"".snapshot""$(date +$TODO_DATE_FMT)"
+                cat $fn > "$fn$(date +$TODO_DATE_FMT).snapshot"
             done
             ;;
         -h|--help) usage
@@ -234,4 +234,4 @@ _todo(){
     fi
 }
 
-complete -o nospace -o nosort -F _todo todo
+complete -o nospace -F _todo todo
