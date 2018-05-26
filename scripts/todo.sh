@@ -10,9 +10,9 @@ TODO_CMDS="add finish drop rm resume next list ls bump push reorder finished don
 [ ! -e $DONE_FILE ] && touch $DONE_FILE
 
 usage() {
-	echo "Usage: todo (finish|drop|rm|resume|revive|bump|push) [ -E ]  TODO_LIST_QUERY"
+	echo "Usage: todo (finish|drop|rm|bump|push) [ -E ]  TODO_LIST_QUERY"
     echo "       todo (list|ls)  [ [ -E ] TODO_LIST_QUERY ]"
-    echo "       todo (finished|done)  [ [ -E ] DONE_LIST_QUERY ]"
+    echo "       todo (resume|revive|finished|done)  [ [ -E ] DONE_LIST_QUERY ]"
     echo "       todo next"
     echo "       todo add  LIST_ITEM"
     echo "       todo reorder [ ROW_NUM1 [ROW_NUM2 [ ... ] ] ]"
@@ -26,14 +26,37 @@ todo() {
         shift
         grepargs='-i -E'
     fi
-	local item="$@"
+	local item="$(_escape "$@")"
 	
 	case "$cmd" in
-	    add) grep -qiE "^$item\$" $TODO_FILE && echo "'$item' is already on your todo list!" && return 1
+	    
+        next) echo; head -1 $TODO_FILE && echo
+            ;;
+		
+		add) grep -qiE "^$item\$" $TODO_FILE && echo "'$item' is already on your todo list!" && return 1
             local ntasks=$(($(wc -l $TODO_FILE | cut -f 1 -d ' ') + 1))
             echo "$item" >> $TODO_FILE && echo "Added item '$item' at position $ntasks successfully!"
     	    ;;
+
+        snapshot)
+            local fn
+            for fn in "$TODO_FILE" "$DONE_FILE"; do
+                cat $fn > "$fn$(date +$TODO_DATE_FMT).snapshot"
+            done
+            ;;
             
+	    list|ls|finished|done) 
+            echo
+            local sub
+            [ "$cmd" == ls ] && cmd=list 
+            [ "$cmd" == list ] && grepargs="-n $grepargs" && sub=:
+            [ "$cmd" == done ] && cmd=finished
+            [ "$cmd" == finished ] && local TODO_FILE=$DONE_FILE && sub=$'\t'
+            
+            grep $grepargs "$item" $TODO_FILE | { while read line; do echo "     $line" | tr "$sub" $'\t' ; done; }
+            echo
+            ;;
+        
         finish|drop|bump|resume|revive|push|rm)
             [ "$cmd" == rm ] && cmd=drop
             [ "$cmd" == revive ] && cmd=resume
@@ -43,27 +66,26 @@ todo() {
                 return 1
             fi
             
+            local infile=$TODO_FILE outfile=$DONE_FILE
             if [ "$cmd" == resume ]; then
-                local swap=$TODO_FILE
-                local TODO_FILE=$DONE_FILE
-                local DONE_FILE=$swap
-                unset swap
+                infile=$DONE_FILE
+                outfile=$TODO_FILE
             fi
-            echo read from $TODO_FILE
             
-            if ! grep -q $grepargs "$item" $TODO_FILE; then
-                echo "Error: No item matching $item in $TODO_FILE!"
+            if ! grep -q $grepargs "$item" $infile; then
+                echo "Error: No item matching $item in $infile!"
                 return 1
             fi
             
-            local ntasks=$(grep -c $grepargs "$item" $TODO_FILE)
-            local n all=false msg="Choose a task 1-$ntasks or type 'a' to $cmd them all:"
-            
+            local ntasks=$(grep -c $grepargs "$item" $infile)
+            local n=1 all=false
+
             if [ $ntasks -gt 1 ]; then
+            	local msg="Choose a task 1-$ntasks or type 'a' to $cmd them all:"
                 echo "$ntasks match the query '$item'"
                 echo "$msg"
                 echo
-                grep $grepargs "$item" $TODO_FILE | nl -n rn -w 6
+                grep $grepargs "$item" $infile | nl -n rn -w 6
                 echo
                 
                 while read -p '? ' n; do
@@ -83,67 +105,50 @@ todo() {
                             ;;
                     esac
                 done
-            else
-                n=1
             fi
 
-            local ing="ing"
-            [ "$cmd" == drop ] && ing="ping"
+            local suffix="ing"
+            [ "$cmd" == drop ] && suffix="ping"
             if ! $all; then
-                local item=$(grep $grepargs "$item" $TODO_FILE | head -$n | tail -1)
-                echo "    ${cmd%e}""$ing '$item' ..."
-                item="^$item\$"
+                local item="$(grep $grepargs "$item" $infile | head -$n | tail -1)"
+                echo "    ${cmd%e}""$suffix '$item' ..."
+                item="^$(_escape "$item")\$"
                 grepargs="${grepargs%-E} -E"
             else
-                echo "    ${cmd%e}""$ing $ntasks ..."
+                echo "    ${cmd%e}$suffix $ntasks ..."
             fi
             
             local tmpfile=$(mktemp)
             
             if [ "$cmd" == finish ]; then
-                grep $grepargs "$item" $TODO_FILE | sort | uniq | {
-                    while read line; do echo "$line"$'\t'"$(date +$TODO_DATE_FMT)"; done
+            	grep $grepargs "$item" $infile | sort | uniq | {
+                    while read line; do echo "$(date +$TODO_DATE_FMT)"$'\t'"$line"; done
                 } > $tmpfile
-                cat $DONE_FILE >> $tmpfile
-                cat $tmpfile > $DONE_FILE && rm -f $tmpfile
+                cat $outfile >> $tmpfile
+                cat $tmpfile > $outfile && rm -f $tmpfile
             elif [ "$cmd" == resume ]; then
-                grep $grepargs "$item" $TODO_FILE | cut -f -1 -d $'\t' | sort | uniq | {
+                grep $grepargs "$item" $infile | cut -f 2- -d $'\t' | sort | uniq | {
                     while read line; do
-                        if ! grep -E "^$line\$" $DONE_FILE; then
+                        if ! grep -E "^$line\$" $outfile; then
                             echo "$line"
                         else
                             echo "'$line' is already on your todo list; skipping ..." >&2
                         fi
                     done
                 } > $tmpfile
-                cat $DONE_FILE >> $tmpfile
-                cat $tmpfile > $DONE_FILE && rm -f $tmpfile
+                cat $outfile >> $tmpfile
+                cat $tmpfile > $outfile && rm -f $tmpfile
             elif [ "$cmd" == bump ]; then
-                grep $grepargs "$item" $TODO_FILE > $tmpfile
+                grep $grepargs "$item" $infile > $tmpfile
             fi
             
-            grep -v $grepargs "$item" $TODO_FILE >> $tmpfile
-            [ "$cmd" == push ] && grep $grepargs "$item" $TODO_FILE >> $tmpfile
-            cat $tmpfile > $TODO_FILE && rm -f $tmpfile
+            grep -v $grepargs "$item" $infile >> $tmpfile
+            [ "$cmd" == push ] && grep $grepargs "$item" $infile >> $tmpfile
+            cat $tmpfile > $infile && rm -f $tmpfile
             
             local suffix="ed"
             [ "$cmd" == drop ] && suffix="ped"
-            echo "$cmd$suffix $ntasks tasks successfully!"
-            ;;
-            
-        next) echo; head -1 $TODO_FILE && echo
-            ;;
-            
-	    list|ls|finished|done) 
-            echo
-            local sub
-            [ "$cmd" == ls ] && cmd=list 
-            [ "$cmd" == list ] && grepargs="-n $grepargs" && sub=:
-            [ "$cmd" == done ] && cmd=finished
-            [ "$cmd" == finished ] && local TODO_FILE=$DONE_FILE && sub=$'\t'
-            
-            grep $grepargs "$item" $TODO_FILE | { while read line; do echo "     $line" | tr "$sub" $'\t' ; done; }
-            echo
+            echo "${cmd%e}$suffix $ntasks tasks successfully!"
             ;;
             
         reorder)
@@ -196,12 +201,7 @@ todo() {
                      "you may recover your .todo from $tmpfile"
             echo $'\n'"Reordered:$reorder""successfully!"$'\n'
             ;;
-        snapshot)
-            local fn
-            for fn in "$TODO_FILE" "$DONE_FILE"; do
-                cat $fn > "$fn$(date +$TODO_DATE_FMT).snapshot"
-            done
-            ;;
+
         -h|--help) usage
             ;;
         
@@ -215,17 +215,23 @@ todo() {
 	esac
 }
 
+_escape() {
+	echo "$@" | sed -E 's/([\$	])/\\\1/g'
+}
+
 _todo(){
     local last="${COMP_WORDS[$COMP_CWORD]}"
     if [ $COMP_CWORD -eq 1 ]; then
         COMPREPLY=($(compgen -W "$TODO_CMDS" "$last" | sort))
     elif [ $COMP_CWORD -gt 1 ]; then
         case "${COMP_WORDS[1]}" in
-            finish|drop|rm|list|ls|bump|push)
-                COMPREPLY=($(compgen -W "$(cat $TODO_FILE)" "$last" | sort))
-                ;;
-            resume|finished)
-                COMPREPLY=($(compgen -W "$(cat $DONE_FILE)" "$last" | sort))
+            finish|drop|rm|list|ls|bump|push|resume|revive|done|finished)
+                local queryfile=$TODO_FILE
+                case "${COMP_WORDS[1]}" in
+                	resume|revive|done|finished) queryfile=$DONE_FILE ;;
+				esac
+				local words="$(_escape "$(cat $queryfile)")"
+                COMPREPLY=($(compgen -W "$words" "$last" | sort))
                 ;;
             reorder) COMPREPLY=($(compgen -W "$(seq 1 $(wc -l $TODO_FILE  | cut -f 1 -d ' ') | sort -n)" "$last"))
                 return
