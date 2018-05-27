@@ -1,4 +1,24 @@
 #!/usr/bin/env bash
+echo '
+        _,qmmmm~,_                                                         .o                              
+       q#""MMMMMMM)                                                        (N                              
+       MA_/MMMMMMMM                                                  (N    (N                              
+       """""*MMMMMM ___                                          _   (N__  (N  __         __        ___    
+  ,QMMMMMMMMMMMMMMM MMMp_                                Nj     (N  ^VN^^  (N,d>*V@,   ,@>^^Vg    g9^"^<N, 
+ &MMMMMMMMMMMMMMMMM MMMMp             .o                 Nj     (N   (N    (N     (N  (N     (N  (N     (N 
+ MMMMMMMMMMMMMMMMM`qMMMMMp            (N       ===  ===  Nj     (N   (N    (N     (N  @@      N} (N     (N 
+ MMMMMM9"_________qMMMMMMp            (N                 Nj     (N   (N    (N     (N  @@      N} (N     (N 
+ MMMMM/_MMMMMMMMMMMMMMMMMb     __     (N   _             @@     (N   (N    (N     (N  `N     (N  (N     (N 
+ WMMMM MMMMMMMMMMMMMMMMMW   ,@d^Vg.   (N,d>*V@,          `Wgg~gdVN    Wg,  (N     (N   `Wg,,g>   (N     (N 
+  WMMM MMMMMMMMMMMMMMMMW   (N     `h  (N     (N                 (@                                         
+    `` MMMMMM______        `Wgg~g.    (N     (N                 @)                                         
+       MMMMMMMMW"WM              `N}  (N     (N             ,,gS"                                          
+       WMMMMMMMp_WW        (N     N}  (N     (N                                                            
+        "MMMMMMMW"      *  `Wg,,,d^   (N     (N                                                            
+
+                           
+version 0.0
+'
 
 # TODO:
 
@@ -940,3 +960,6 @@ trap 'raise $(get EXCEPTIONS $?)' >&2 ERR
 
 trap _rmfifos EXIT
 trap _rm_errfile EXIT
+
+[ -z "$PS1_BACKUP" ] && PS1_BACKUP="$PS1"
+PS1="${PS1_BACKUP%\\\$*} <shython>\$ "
