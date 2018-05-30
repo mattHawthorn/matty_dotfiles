@@ -95,5 +95,30 @@ assignfunc() {
     fi
 }
 
+lscronjobs() {
+    [ $# -lt 1 ] && echo "Usage: runcronjob KEYWORD [ KEYWORD [ KEYWORD ... ] ]"
+    local keywords="$@" njobs=0 jobs job
+    crontab -l | cut -f 6- -d ' ' | grep -E "$keywords" | {
+        while read job; do
+            echo "$job"
+            njobs=$((njobs + 1))
+        done
+        [ $njobs -lt 1 ] && echo "No jobs found which match '$keywords'" >&2 && return 1
+    }
+}
+
+runcronjob() {
+    local all=false line
+    if [ "$1" == "-a" ]; then
+        all=true; shift
+    fi
+    lscronjobs "$@" | {
+        while read line; do
+            eval $line
+            ! $all && break
+        done
+    }
+}
+
 export BASHUTILS_IMPORTED=1
 
