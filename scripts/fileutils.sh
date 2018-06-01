@@ -17,37 +17,38 @@ mkrdir() {
 }
 
 robustcopy() {
-    local from=$1 to=$2
+    local from="$1" to="$2"
     local flag=""
-    if [ -d $from ]; then
+    if [ -d "$from" ]; then
         flag="${flag} -r"
         if [ -d $to ]; then
             flag="${flag} -T"
         fi
     fi
-    cp $flag $from $to
+    cp $flag "$from" "$to"
 }
+
+BACKUP_SUFFIX=".backup"
 
 backup() {
     # make a backup copy of the first arg in the dir specified by the second.
-    # if no second arg is passed, make the backup in the current dir
-    local f=$1 dest=$2
-    if [ -z "$f" ]; then echo "no file specified; aborting"; return; fi
-    if [[ ! -z $dest && ! -d $dest ]]; then
-        echo "specified directory ${dest} does not exist";
-        return;
-    fi
-    if [ -z $dest ]; then dest="."; fi
+    # if no second arg is passed, make the backup in the dir where the first arg is located.
+    if [ $# -lt 1 ]; then echo "no file specified; aborting" >&2; return 1; fi
+    
+    local f=$1; shift
+    if [ $# -lt 1 ]; then dest="$(dirname "$f")"; else dirname="$1"; shift; fi
+    
+    if [ ! -d "$dest" ]; then echo "specified directory ${dest} does not exist" >&2; return; fi
+    
     # expand glob if any
     local files=($f)
-    for f in ${files[@]}; do
-        if [ ! ${f%%.backup} = $f ]; then
+    
+    for f in "${files[@]}"; do
+        if [ ! "${f%%$BACKUP_SUFFIX}" == "$f" ]; then
            echo "${f} appears to already be a backup file; skipping"
            continue
         fi
-        local backupname="$(basename $f).backup"
-        local backuploc="${dest}/${backupname}"
-        robustcopy $f $backuploc
+        cp -r "$f" "${dest}/$(basename "$f")$BACKUP_SUFFIX"
     done
 }
 
