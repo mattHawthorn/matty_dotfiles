@@ -33,22 +33,41 @@ BACKUP_SUFFIX=".backup"
 backup() {
     # make a backup copy of the first arg in the dir specified by the second.
     # if no second arg is passed, make the backup in the dir where the first arg is located.
+    local CLOBBER=false
+    if [ "$1" == '-f' ]; then CLOBBER=true; shift; fi    
     if [ $# -lt 1 ]; then echo "no file specified; aborting" >&2; return 1; fi
     
-    local f=$1; shift
-    if [ $# -lt 1 ]; then dest="$(dirname "$f")"; else dirname="$1"; shift; fi
+    if [ $# -gt 2 ]; then 
+        echo "backup() accepts at most 2 positional arguments; a file, dir, or glob to backup, and optionally a " >&2
+        echo "destination directory. If you wish to expand a glob pattern, put it in quotes:" >&2
+        echo "    backup [-f] 'GLOB_PATTERN' [ DESTINATION ]" >&2
+        return 1
+    fi
     
-    if [ ! -d "$dest" ]; then echo "specified directory ${dest} does not exist" >&2; return; fi
+    local f="$1"; shift
+    if [ $# -lt 1 ]; then dest="$(dirname "$f")"; else dest="$1"; shift; fi
+    if [ ! -d "$dest" ]; then echo "specified directory ${dest} does not exist; aborting" >&2; return 1; fi
     
     # expand glob if any
     local files=($f)
+    local destfile
     
     for f in "${files[@]}"; do
+        destfile="${dest}/$(basename "$f")$BACKUP_SUFFIX"
+        if ! $CLOBBER && [ -e "$destfile" ]; then
+            echo "Skipping '$f' since '$destfile' already exists; pass a '-f' flag to override this behavior" >&2
+            continue
+        fi
+        if [ "$(realpath "$f")" == "$(realpath "$dest")" ]; then
+            echo "Refusing to back up $f to itself!" >&2
+            continue
+        fi
         if [ ! "${f%%$BACKUP_SUFFIX}" == "$f" ]; then
-           echo "${f} appears to already be a backup file; skipping"
+           echo "${f} appears to already be a backup file; skipping" >&2
            continue
         fi
-        cp -r "$f" "${dest}/$(basename "$f")$BACKUP_SUFFIX"
+        echo "$f -> $destfile"
+        cp -r "$f" "$destfile"
     done
 }
 
