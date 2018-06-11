@@ -105,8 +105,8 @@ set_conda_env_aliases() {
 }
 
 set_python_dev_aliases() {
-    alias pyspyi="python setup.py install"
-    alias pyspyd="python setup.py develop"
+    alias pspi="python setup.py install"
+    alias pspd="python setup.py develop"
     
     SANDBOX="$HOME/Desktop/sandbox"
     alias sandbox="cd $SANDBOX"
