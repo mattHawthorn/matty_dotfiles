@@ -6,6 +6,16 @@ DOMINOUSER="matthawthorn"
 DOMINOPATH="$HOME/Domino"
 DOMINOTEMPLATEPATH="$DOMINOPATH/ProjectTemplate"
 
+alias mydomino='cd $DOMINOPATH/$DOMINOUSER'
+
+if [ -d "$DOMINOPATH" ]; then
+    for group in $(ls "$DOMINOPATH"); do
+        eval "alias $group='cd \$DOMINOPATH/$group'"
+    done
+fi
+unset group
+
+
 _dominonewusage(){
     echo
     echo "Create a new domino project and initialize it with a template"
