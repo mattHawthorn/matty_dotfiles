@@ -1,14 +1,24 @@
+if [ "$1" = '-A' ]; then
+    CMD=symlink; shift
+else
+    CMD=prompt_symlink
+fi
+
 LN_FLAGS="$@"
 
 prompt_symlink() { 
     local a
     read -p "symlink $1? " a
     case "$a" in 
-        y|Y) ln $LN_FLAGS -s "$1" && 
-                echo $'\n'"    $1 successfully symlinked"$'\n' || 
-                echo $'\n'"    Error symlinking $1!"$'\n' 
+        y|Y) symlink "$1" 
         ;; 
     esac;
+}
+
+symlink() {
+    ln $LN_FLAGS -s "$1" &&
+                echo $'\n'"    $1 successfully symlinked"$'\n' ||
+                echo $'\n'"    Error symlinking $1!"$'\n'
 }
 
 DOTFILESDIR="$(realpath $(dirname $BASH_SOURCE))"

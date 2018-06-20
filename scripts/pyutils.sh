@@ -114,11 +114,11 @@ set_python_dev_aliases() {
     case "$OSTYPE" in
         linux*) 
             PYCHARM_DIR="$(find /opt -maxdepth 1 -type d -name 'pycharm*' | sort -V | tail -n 1)"
-            alias charm="$PYCHARM_DIR/bin/pycharm.sh"
+            alias pycharm="$PYCHARM_DIR/bin/pycharm.sh"
             ;;
         darwin*) 
             PYCHARM_DIR='/Applications/PyCharm\ CE.app'
-            alias charm='$PYCHARM_DIR/Contents/MacOS/pycharm &'
+            alias pycharm='$PYCHARM_DIR/Contents/MacOS/pycharm &'
             ;;
     esac
 }

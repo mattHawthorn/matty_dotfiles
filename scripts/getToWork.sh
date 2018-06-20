@@ -15,4 +15,6 @@ for app in "${startup_apps[@]}"; do
     open -a $app
 done
 
+ping -c 1 CHODSDEV01 || open -a '/Applications/Cisco/Cisco AnyConnect Secure Mobility Client.app'
+
 kinit
