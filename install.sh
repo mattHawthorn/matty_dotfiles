@@ -56,7 +56,7 @@ prompt_symlink() {
 }
 
 symlink() {
-    ln ${LN_FLAGS[@]} "$1" "$DIR" &&
+    ln ${LN_FLAGS[@]} "$1" -t "$DIR" &&
                 echo $'\n'"    Success symlinking $1 in $DIR"$'\n' ||
                 echo $'\n'"    Error symlinking $1 in $DIR!"$'\n'
 }
