@@ -56,16 +56,14 @@ prompt_symlink() {
 }
 
 symlink() {
-    ln ${LN_FLAGS[@]} "$1" &&
+    ln ${LN_FLAGS[@]} "$1" "$DIR" &&
                 echo $'\n'"    Success symlinking $1 in $DIR"$'\n' ||
                 echo $'\n'"    Error symlinking $1 in $DIR!"$'\n'
 }
 
-pushd "$DIR" >/dev/null
 for line in $(cat $TMPFILE | sort); do "$CMD" "$line"; done;
 rm $TMPFILE
 
 [ -e .bash_profile ] && echo $'\n'"Run 'source ~/.bash_profile' to take advantage of your new shell configuration"$'\n'
-popd >/dev/null
 echo Finished!
 echo
