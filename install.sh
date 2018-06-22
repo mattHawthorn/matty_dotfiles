@@ -27,7 +27,7 @@ echo "Passing flags ${LN_FLAGS[@]} to ln"
 
 FILES=("$@")
 
-DOTFILESDIR="$(realpath $(dirname $BASH_SOURCE))"
+DOTFILESDIR="$(dirname $BASH_SOURCE)"
 TMPFILE="$(mktemp)"
 
 if [ ${#FILES[@]} -eq 0 ]; then
