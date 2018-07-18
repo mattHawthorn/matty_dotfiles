@@ -37,9 +37,9 @@ _set_py_not_stdlib_script
 
 pydeps() {
     local include_stdlib=false
-    if [ $1 == "-s" ]; then include_stdlib=true; shift; fi
-    local dir="." interpreter="python" mods
-    [ $# -gt 0 ] && dir="$1"
+    if [ "$1" == "-s" ]; then include_stdlib=true; shift; fi
+    interpreter="python"
+    [ $# -gt 0 ] && dir="$1" || dir="$(pwd)"
     local modname="$(basename $dir)"
     [ $# -gt 1 ] && interpreter="$2"
     local stdlibdir="$($interpreter -c 'import os; print(os.path.dirname(os.__file__))')"
@@ -54,7 +54,7 @@ pydeps() {
     )"
 
     if $include_stdlib; then
-        for mod in $mods; do echo mod; done
+        for mod in $mods; do echo "$mod"; done
     else
         $interpreter -c "$PY_NOT_STDLIB_SCRIPT" $mods
     fi

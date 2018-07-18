@@ -120,5 +120,18 @@ runcronjob() {
     }
 }
 
-export BASHUTILS_IMPORTED=1
+_escape() {
+    echo "$@" | sed -E 's/([\$  ])/\\\1/g'
+}
 
+_cronjobs() {
+    local last="${COMP_WORDS[$COMP_CWORD]}"
+    
+    local words="$(_escape "$(crontab -l | cut -f 6- -d ' ')")"
+    COMPREPLY=($(compgen -W "$words" "$last" | sort))
+}
+
+complete -o nospace -F _cronjobs runcronjob
+complete -o nospace -F _cronjobs lscronjobs
+
+export BASHUTILS_IMPORTED=1
