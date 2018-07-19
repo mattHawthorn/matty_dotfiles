@@ -4,16 +4,36 @@
 
 _set_py_not_stdlib_script() {
 local IFS=''
-PY_NOT_STDLIB_SCRIPT="$(while read  line; do echo "$line"; done <<EOF
+read -r -d '' PY_NOT_STDLIB_SCRIPT <<"EOF"
 import sys, os
+bname = os.path.basename
+
+args = sys.argv[1:]
+
+include_stdlib = False
+include_versions = True
+while args[0].startswith("-"):
+    if args[0] == "--no-versions":
+        include_versions=False
+    elif args[0] in ("-s", "--include-stdlib"):
+        include_stdlib=True
+    elif args[0] == "-r":
+        args = args[1:]
+        with open(args[0]) as f:
+            requirements =
+    else:
+        raise ValueError("Unknown flag or option: {}".format(args[0]))
+    args = args[1:]
+
 dirs = []
 for n in sys.path:
-    if n.endswith("/site-packages") or n.endswith("/dist-packages"):
+    if bname(n) == ("site-packages") or bname(n) == ("dist-packages"):
         break
     dirs.append(n)
 
 def is_stdlib(name):
-    return any(os.path.exists(os.path.join(d, name)) or
+    return name in sys.builtin_module_names or \
+           any(os.path.exists(os.path.join(d, name)) or
                os.path.isfile(os.path.join(d, name + '.py')) or
                any(n.startswith(name + '.') for n in os.listdir(d))
                for d in dirs if os.path.isdir(d))
@@ -27,38 +47,54 @@ for f in sys.argv[1:]:
         pass
         # print("Not importable: {}".format(f), file=sys.stderr)
     else:
-        if not is_stdlib(f):
-            print(f)
+        if include_stdlib or not is_stdlib(f):
+            if not include_versions or not hasattr(mod, "__version__"):
+                print(f)
+            else:
+                print("{}=={}".format(f, getattr(mod, "__version__")))
 EOF
-)"
 }
 _set_py_not_stdlib_script
 
 
 pydeps() {
-    local include_stdlib=false
-    if [ "$1" == "-s" ]; then include_stdlib=true; shift; fi
-    interpreter="python"
-    [ $# -gt 0 ] && dir="$1" || dir="$(pwd)"
-    local modname="$(basename $dir)"
-    [ $# -gt 1 ] && interpreter="$2"
-    local stdlibdir="$($interpreter -c 'import os; print(os.path.dirname(os.__file__))')"
+    local flags=()
+    local modname_pattern='([a-zA-Z_][a-zA-Z0-9_]*)'
+    local interpreter="python"
+    local import_pattern pyscript modname stdlibdir requirements
 
-    local pyscript
+    while [ "$1" != "${1#-}" ]; do
+        case "$1" in
+            -h) echo "USAGE: pydeps [-h] [-s|--include-stdlib] [--no-versions] [-n|--namespace NAMESPACE_PATTERN] [-i|--interpreter PYTHON INTERPRETER] [MODULE_DIR]"
+                return 1
+                ;;
+            -s|--include-stdlib|--no-versions) flags=("$1" "${flags[@]}"); shift
+                ;;
+            --namespace|-n) modname_pattern="($2\.$modname_pattern|$modname_pattern)"; shift 2
+                ;;
+            --interpreter|-i) interpreter="$2"; shift 2
+                ;;
+            *) echo "Unknown option: $1"; return 1
+                ;;
+        esac
+    done
+
+    [ $# -gt 0 ] && dir="$1" || dir="$(pwd)"
+
+    modname="$(basename $dir)"
+    stdlibdir="$($interpreter -c 'import os; print(os.path.dirname(os.__file__))')"
+    import_pattern="^(from|import)\s+$modname_pattern"
 
     mods="$(
-    find "$dir" -name '*.py' -type f -exec grep -oE '^(from|import)\s+([a-zA-Z_][a-zA-Z0-9_]*)' {} \; |
+    find "$dir" -name '*.py' -type f -exec grep -oE "$import_pattern" '{}' \; |
         sed -E 's/(^(from|import)\s+)//' | sort | uniq | {
-            while read line; do [ $line == $modname ] || echo $line; done
+            while read line; do [ "$line" == "$modname" ] || echo "$line"; done
         }
     )"
 
-    if $include_stdlib; then
-        for mod in $mods; do echo "$mod"; done
-    else
-        $interpreter -c "$PY_NOT_STDLIB_SCRIPT" $mods
-    fi
+    "$interpreter" -c "$PY_NOT_STDLIB_SCRIPT" ${flags[@]} $mods
 }
+
 
 # Python starter-uppers
 
@@ -288,3 +324,67 @@ _scratchpad() {
     # COMPREPLY=(${COMPREPLY[@]} $COMP_CWORD  "'" ${COMP_WORDS[-1]} "'")
 }
 complete -o filenames -o nospace -F _scratchpad scratchpad
+
+
+pushd_() {
+    pushd "$1" > /dev/null
+}
+
+popd_() {
+    popd > /dev/null
+}
+
+namespaceify() {
+    local name dir_ pkg_dir mv_setup_py='touch setup.py' tmp mods=()
+
+    case "$1" in
+        -x) local SAFE=0; shift
+            ;;
+    esac
+
+    if [ -z "$1" ]; then 
+        dir_="$(pwd)"
+    else
+        dir_="$1"
+    fi
+   
+    name="$(basename $dir_)"
+
+    pushd_ "$dir_"
+
+    pushd_ ..
+    [ -f "setup.py" ] && mv_setup_py="cp $(pwd)/setup.py ./"
+    popd_
+
+    tmp="$(mktemp -d)"
+
+    for subdir in $(ls); do
+        [ ! -d "$subdir" ] || [ "$subdir" = "__pycache__" ] && continue
+        mods=("${mods[@]}" "$subdir")
+        echo creating subpackage "$subdir"
+        
+        safely mv "$subdir" "$tmp/" &&
+            safely mkdir "$subdir" &&
+            safely pushd_ "$subdir" &&
+            safely mkdir "$name" && 
+            safely pushd_ "$name" && 
+            safely mv "$tmp/$subdir" ./ &&
+            safely popd_ && 
+            safely $mv_setup_py &&
+            safely eval pydeps -n "$name" "$name >requirements.txt" &&
+            safely popd_
+        
+        echo
+    done
+    
+    popd_
+
+    rm -rf "$tmp"
+
+    echo "Namespaced the following submodules in $name:"
+    for m in ${mods[@]}; do echo $m; done; echo
+    echo "You may need to check that setup.py and requirements.txt are correct in each submodule."
+    echo "The dummy requirements.txt files written therein contain module names as in found in import statements;"
+    echo "These in general may not match distribution names as found in PyPI and installed by pip."
+    echo
+}
