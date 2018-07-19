@@ -17,10 +17,6 @@ while args[0].startswith("-"):
         include_versions=False
     elif args[0] in ("-s", "--include-stdlib"):
         include_stdlib=True
-    elif args[0] == "-r":
-        args = args[1:]
-        with open(args[0]) as f:
-            requirements =
     else:
         raise ValueError("Unknown flag or option: {}".format(args[0]))
     args = args[1:]
