@@ -7,19 +7,20 @@ local IFS=''
 read -r -d '' PY_NOT_STDLIB_SCRIPT <<"EOF"
 import sys, os
 bname = os.path.basename
-
-args = sys.argv[1:]
+args = sys.argv[1:] if len(sys.argv) > 1 else []
 
 include_stdlib = False
 include_versions = True
-while args[0].startswith("-"):
-    if args[0] == "--no-versions":
-        include_versions=False
-    elif args[0] in ("-s", "--include-stdlib"):
-        include_stdlib=True
-    else:
-        raise ValueError("Unknown flag or option: {}".format(args[0]))
-    args = args[1:]
+
+if args:
+    while args[0].startswith("-"):
+        if args[0] == "--no-versions":
+            include_versions=False
+        elif args[0] in ("-s", "--include-stdlib"):
+            include_stdlib=True
+        else:
+            raise ValueError("Unknown flag or option: {}".format(args[0]))
+        args = args[1:]
 
 dirs = []
 for n in sys.path:
@@ -331,7 +332,7 @@ popd_() {
 }
 
 namespaceify() {
-    local name dir_ pkg_dir mv_setup_py='touch setup.py' tmp mods=()
+    local name dir_ pkg_dir mv_setup_py='touch setup.py' mv_setup_py_msg='' tmp mods=()
 
     case "$1" in
         -x) local SAFE=0; shift
@@ -349,14 +350,21 @@ namespaceify() {
     pushd_ "$dir_"
 
     pushd_ ..
-    [ -f "setup.py" ] && mv_setup_py="cp $(pwd)/setup.py ./"
+    if [ -f "setup.py" ]; then
+        mv_setup_py="cp $(pwd)/setup.py ./"
+        mv_setup_py_msg=" from $(pwd)/setup.py"
+    fi
     popd_
 
     tmp="$(mktemp -d)"
 
     for subdir in $(ls); do
         [ ! -d "$subdir" ] || [ "$subdir" = "__pycache__" ] && continue
-        mods=("${mods[@]}" "$subdir")
+        if [ ! -f "$subdir/__init__.py" ]; then
+            echo "$subdir appears not to be a python module (no __init__.py); skipping."
+            continue
+        fi
+        
         echo creating subpackage "$subdir"
         
         safely mv "$subdir" "$tmp/" &&
@@ -366,21 +374,34 @@ namespaceify() {
             safely pushd_ "$name" && 
             safely mv "$tmp/$subdir" ./ &&
             safely popd_ && 
+            echo "creating setup.py$mv_setup_py_msg"
             safely $mv_setup_py &&
+            echo "generating requirements.txt from parsed imports"
             safely eval pydeps -n "$name" "$name >requirements.txt" &&
             safely popd_
-        
+            
+        if [ $? -ne 0 ]; then
+            echo Error: failed to create subpackage "$subdir"
+        else        
+            mods=("${mods[@]}" "$subdir")
+        fi
         echo
     done
     
     popd_
 
     rm -rf "$tmp"
-
-    echo "Namespaced the following submodules in $name:"
-    for m in ${mods[@]}; do echo $m; done; echo
-    echo "You may need to check that setup.py and requirements.txt are correct in each submodule."
-    echo "The dummy requirements.txt files written therein contain module names as in found in import statements;"
-    echo "These in general may not match distribution names as found in PyPI and installed by pip."
+    
+    if [ ${#mods[@]} -gt 0 ]; then
+        echo
+        echo "Namespaced the following submodules in $name:"
+        for m in ${mods[@]}; do echo $m; done; echo
+        echo "You may need to check that setup.py and requirements.txt are correct in each submodule."
+        echo "The dummy requirements.txt files written therein contain module names as in found in import statements;"
+        echo "These in general may not match distribution names as found in PyPI and installed by pip."
+    else
+        echo
+        echo "No modules were namespaced in $name!"
+    fi
     echo
 }
