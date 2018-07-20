@@ -332,12 +332,19 @@ popd_() {
 }
 
 namespaceify() {
-    local name dir_ pkg_dir mv_setup_py='touch setup.py' mv_setup_py_msg='' tmp mods=()
-
-    case "$1" in
-        -x) local SAFE=0; shift
-            ;;
-    esac
+    local name dir_ pkg_dir tmp mods=() 
+    local mv_setup_py='touch setup.py' mv_setup_cfg='' mv_setup_py_msg='' mv_setup_cfg_msg='' testdir=''
+    local ns_init="__import__('pkg_resources').declare_namespace(__name__)"
+    local SAFE=1
+    
+    while [ "$1" != "${1#-}" ]; do
+        case "$1" in
+            -x) local SAFE=0; shift
+                ;;
+            -t) local testdir="$2"; shift 2
+                ;;
+        esac
+    done
 
     if [ -z "$1" ]; then 
         dir_="$(pwd)"
@@ -353,6 +360,10 @@ namespaceify() {
     if [ -f "setup.py" ]; then
         mv_setup_py="cp $(pwd)/setup.py ./"
         mv_setup_py_msg=" from $(pwd)/setup.py"
+    fi
+    if [ -f "setup.cfg" ]; then
+        mv_setup_cfg="cp $(pwd)/setup.cfg ./"
+        mv_setup_cfg_msg=" from $(pwd)/setup.cfg"
     fi
     popd_
 
@@ -373,13 +384,17 @@ namespaceify() {
             safely mkdir "$name" && 
             safely pushd_ "$name" && 
             safely mv "$tmp/$subdir" ./ &&
+            echo "creating default __init__.py" &&
+            safely eval echo '"'"$ns_init"'"' ">__init__.py" &&
             safely popd_ && 
-            echo "creating setup.py$mv_setup_py_msg"
+            echo "creating setup.py$mv_setup_py_msg" &&
             safely $mv_setup_py &&
-            echo "generating requirements.txt from parsed imports"
-            safely eval pydeps -n "$name" "$name >requirements.txt" &&
+            ( [ ! -z "$mv_setup_cfg" ] && echo "creating setup.cfg$mv_setup_cfg_msg" && safely $mv_setup_cfg || true ) &&
+            echo "generating requirements.txt from parsed imports" &&
+            safely eval pydeps -n "$name" "$name" ">requirements.txt" &&
+            ( [ ! -z "$testdir" ] && echo "creating directory for test suite in $testdir/" && mkdir "$testdir" || true ) &&
             safely popd_
-            
+        
         if [ $? -ne 0 ]; then
             echo Error: failed to create subpackage "$subdir"
         else        
@@ -397,8 +412,13 @@ namespaceify() {
         echo "Namespaced the following submodules in $name:"
         for m in ${mods[@]}; do echo $m; done; echo
         echo "You may need to check that setup.py and requirements.txt are correct in each submodule."
+        [ ! -z "$testdir" ] && echo "You may also need to migrate your test suites to $testdir/ in each submodule."
         echo "The dummy requirements.txt files written therein contain module names as in found in import statements;"
         echo "These in general may not match distribution names as found in PyPI and installed by pip."
+        if [ -f "$dir_/__init__.py" ]; then
+            echo "__init__.py still exists in $dir_; if there is any setup logic there it will need to be transferred to the submodules"
+        fi
+        echo "Be sure to put 'namspace_packages=['$name'], zip_safe=False' in the setuptools.setup() call of each submodule's __init__.py"
     else
         echo
         echo "No modules were namespaced in $name!"
