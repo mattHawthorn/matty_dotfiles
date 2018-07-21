@@ -42,6 +42,7 @@ for f in sys.argv[1:]:
         mod = __import__(f)
     except:
         pass
+        print(f)
         # print("Not importable: {}".format(f), file=sys.stderr)
     else:
         if include_stdlib or not is_stdlib(f):
@@ -88,7 +89,7 @@ pydeps() {
             while read line; do [ "$line" == "$modname" ] || echo "$line"; done
         }
     )"
-
+    
     "$interpreter" -c "$PY_NOT_STDLIB_SCRIPT" ${flags[@]} $mods
 }
 
@@ -140,6 +141,8 @@ set_conda_env_aliases() {
 set_python_dev_aliases() {
     alias pspi="python setup.py install"
     alias pspd="python setup.py develop"
+    alias pspb="python setup.py build"
+    alias pspt="python setup.py test"
     
     SANDBOX="$HOME/Desktop/sandbox"
     alias sandbox="cd $SANDBOX"
