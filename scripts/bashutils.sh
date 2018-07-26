@@ -135,3 +135,16 @@ complete -o nospace -F _cronjobs runcronjob
 complete -o nospace -F _cronjobs lscronjobs
 
 export BASHUTILS_IMPORTED=1
+
+
+unicode() {
+local PY_SEARCH_UNICODE_SCRIPT='import sys, re, unicodedata as ud
+N_UNICODE = 0x10FFFF + 1
+for c in map(ud.lookup,
+             filter(re.compile(r"\b{}\b".format(" ".join(sys.argv[1:])), re.I).search,
+                    filter(None, map(lambda c: ud.name(c, None),
+                                     map(chr, range(0, N_UNICODE)))))):
+    print(c)
+'
+python -c "$PY_SEARCH_UNICODE_SCRIPT" "$@"
+}
