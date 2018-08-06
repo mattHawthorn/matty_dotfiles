@@ -2,7 +2,7 @@
 
 docker-shell(){
     local CONTAINER="$1" shell=bash; shift
-    [ -z "$1" ] && shell="$@"
+    [ ! -z "$1" ] && shell="$@"
     docker exec -it "$CONTAINER" $shell
 }
 

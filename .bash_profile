@@ -86,6 +86,9 @@ set_conda_env_aliases ~/.conda_env_aliases
 which domino > /dev/null && source "$HOME/scripts/dominonew.sh"
 finish -s python_setup
 
+# docker
+source "$HOME/scripts/dockerutils.sh"
+
 # completions
 source "$HOME/scripts/bash_completion.sh"
 install_bash_completions
