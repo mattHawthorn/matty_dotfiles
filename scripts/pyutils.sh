@@ -7,13 +7,13 @@ local IFS=''
 read -r -d '' PY_NOT_STDLIB_SCRIPT <<"EOF"
 import sys, os
 bname = os.path.basename
-args = sys.argv[1:] if len(sys.argv) > 1 else []
+args = sys.argv[1:] if len(sys.argv) >= 1 else []
 
 include_stdlib = False
 include_versions = True
 
 if args:
-    while args[0].startswith("-"):
+    while args and args[0].startswith("-"):
         if args[0] == "--no-versions":
             include_versions=False
         elif args[0] in ("-s", "--include-stdlib"):
@@ -21,6 +21,9 @@ if args:
         else:
             raise ValueError("Unknown flag or option: {}".format(args[0]))
         args = args[1:]
+        
+if not args:
+    exit(0)
 
 dirs = []
 for n in sys.path:
@@ -35,7 +38,7 @@ def is_stdlib(name):
                any(n.startswith(name + '.') for n in os.listdir(d))
                for d in dirs if os.path.isdir(d))
 
-for f in sys.argv[1:]:
+for f in args:
     if f in sys.builtin_module_names:
         continue
     try:
@@ -57,18 +60,21 @@ _set_py_not_stdlib_script
 
 pydeps() {
     local flags=()
-    local modname_pattern='([a-zA-Z_][a-zA-Z0-9_]*)'
+    local modname_pattern='([a-zA-Z_][.a-zA-Z0-9_]*)'
     local interpreter="python"
-    local import_pattern pyscript modname stdlibdir requirements
+    local import_pattern pyscript modname requirements
+    local filename_pat=".*\.(py|pyx|pxd)"
 
     while [ "$1" != "${1#-}" ]; do
         case "$1" in
-            -h) echo "USAGE: pydeps [-h] [-s|--include-stdlib] [--no-versions] [-n|--namespace NAMESPACE_PATTERN] [-i|--interpreter PYTHON INTERPRETER] [MODULE_DIR]"
+            -h) echo "USAGE: pydeps [-h] [-s|--include-stdlib] [--no-cython] [--no-versions] [-n|--namespace NAMESPACE_PATTERN] [-i|--interpreter PYTHON INTERPRETER] [MODULE_DIR]"
                 return 1
                 ;;
             -s|--include-stdlib|--no-versions) flags=("$1" "${flags[@]}"); shift
                 ;;
-            --namespace|-n) modname_pattern="($2\.$modname_pattern|$modname_pattern)"; shift 2
+            --namespace|-n) modname_pattern="($2\.$modname_pattern)"; shift 2
+                ;;
+            --no-cython) filename_pat=".*\.py"; shift
                 ;;
             --interpreter|-i) interpreter="$2"; shift 2
                 ;;
@@ -80,17 +86,59 @@ pydeps() {
     [ $# -gt 0 ] && dir="$1" || dir="$(pwd)"
 
     modname="$(basename $dir)"
-    stdlibdir="$($interpreter -c 'import os; print(os.path.dirname(os.__file__))')"
     import_pattern="^(from|import)\s+$modname_pattern"
-
+    
     mods="$(
-    find "$dir" -name '*.py' -type f -exec grep -oE "$import_pattern" '{}' \; |
+    find "$dir" -regextype posix-egrep -regex "$filename_pat" -type f -exec grep -oE "$import_pattern" '{}' \; |
         sed -E 's/(^(from|import)\s+)//' | sort | uniq | {
             while read line; do [ "$line" == "$modname" ] || echo "$line"; done
         }
     )"
     
     "$interpreter" -c "$PY_NOT_STDLIB_SCRIPT" ${flags[@]} $mods
+}
+
+
+pydeptree() {
+    local dir arg importer imported nocython=false lib="$(basename $(pwd))"
+    for arg in "$@"; do
+        [ arg == '--no-cython' ] && nocython=true
+    done
+    
+    echo 'digraph "'"$(basename $(pwd))"' dependency graph" {'
+    for dir in $(ls); do
+        if [ -d "$dir" ] && ( [ -f "$dir/__init__.py" ] || [ -f "$dir/setup.py" ] ); then
+            importer="$lib.$dir"
+            cd "$dir"
+            pydeps "$@" --no-versions | while read imported; do
+                echo '    "'"$importer"'" -> "'"$imported"'"'
+            done
+            cd ..
+        elif ( $nocython && [ "${dir%.py}" != "$dir" ] ) || 
+             ( ! $nocython && ( [ "${dir%.py}" != "$dir" ] || [ "${dir%.pyx}" != "$dir" ] || [ "${dir%.pxd}" != "$dir" ] ) ); then
+            importer="$lib.${dir%.py}"
+            pydeps "$@" --no-versions "$dir" | while read imported; do
+                echo '    "'"$importer"'" -> "'"$imported"'"'
+            done
+        fi
+    done
+    echo '}'
+}
+
+
+pydeptreeviz() {
+    local outfile="$1"
+    if [ -z "$outfile" ] || [ "${outfile#-}" != "$outfile" ]; then
+        outfile="$(mktemp).pdf"
+    else
+        shift
+    fi
+    
+    local ext="${outfile#${outfile%.*}.}"
+    local tmpfile="$(mktemp)"
+    pydeptree "$@" | tee "$tmpfile"
+    echo "writing dependency visualization to $outfile"
+    dot -T$ext "$tmpfile" > "$outfile" && echo "wrote dependency visualization to $outfile" && open "$outfile"
 }
 
 
