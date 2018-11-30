@@ -90,11 +90,21 @@ finish -s python_setup
 source "$HOME/scripts/dockerutils.sh"
 
 # completions
-source "$HOME/scripts/bash_completion.sh"
-install_bash_completions
+# >> source "$HOME/scripts/bash_completion.sh"
+# >> install_bash_completions
+# Actually, this is the recommended way by the authors of bash_completion:
+[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
+
+# python completions via argcomplete
+export PYTHON_ARGCOMPLETE_OK=true
 
 finish -s source_custom_scripts
 
+# development sandbox
+if [ -d ~/Desktop/sandbox ]; then
+    SANDBOX=~/Desktop/sandbox/
+    alias sandbox='cd "$SANDBOX"'
+fi
 
 case "$OS_TYPE" in
     darwin*) export EMAIL_ADDRESS=matthew.hawthorn@spglobal.com ;;

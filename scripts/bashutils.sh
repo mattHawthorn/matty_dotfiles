@@ -4,6 +4,25 @@
 UNSAFECODE=0
 UNQUIETCODE=0
 
+abspath() {
+    # absolute path of a file or dir
+    local dir="$1"
+    if [ ! -d "$dir" ]; then
+        dir="$(dirname "$dir")"
+        if [ ! -d "$dir" ]; then
+            echo "ERROR: $dir does not exist! Exiting"
+            echo
+            exit 1
+        fi
+        pushd "$dir" > /dev/null
+        echo "$(pwd)/$(basename $1)"
+    else
+        pushd "$dir" > /dev/null
+        pwd
+    fi
+    popd > /dev/null
+}
+
 safely(){
     if [[ "$SAFE" == "$UNSAFECODE" ]]; then 
         "$@" 

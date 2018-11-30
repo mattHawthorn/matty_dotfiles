@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 
-my_work_page="https://spglobal.visualstudio.com/_work"
+my_work_page="https://spglobal.visualstudio.com/Products/_sprints/taskboard/Data\\ Science\\ B/"
 
-startup_apps=("DominoApp" 
-#    "VisualStudioApp"
+startup_apps=(
     "Timing"
     "Firefox $my_work_page"
-    "BoxApp" 
-    "OutlookMailApp" 
-    "CalendarApp" 
+#    "DominoApp" 
+#    "VisualStudioApp"
+#    "BoxApp" 
+#    "OutlookMailApp" 
+#    "CalendarApp" 
+    "Microsoft\\ Teams"
+    "Microsoft\\ Outlook"
     "Slack")
 
 for app in "${startup_apps[@]}"; do
