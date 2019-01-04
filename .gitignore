@@ -3,6 +3,8 @@
 .atom/blob-store
 
 .ipython/*
+!.ipython/profile_default/
+.ipython/profile_default/*
 !.ipython/profile_default/startup/
 
 # Mac OS
