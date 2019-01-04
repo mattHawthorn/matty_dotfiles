@@ -2,7 +2,7 @@
 .idea
 .atom/blob-store
 
-.ipython
+.ipython/*
 !.ipython/profile_default/startup/
 
 # Mac OS
