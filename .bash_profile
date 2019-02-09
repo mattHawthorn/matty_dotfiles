@@ -75,6 +75,9 @@ for module in clipboard datify todo mathutils papertitle fileutils; do
     source "$HOME/scripts/$module.sh"
 done
 
+TEX_BIN="/usr/local/texlive/2018basic/bin/x86_64-darwin"
+[ -d "$TEX_BIN" ] && export PATH="$TEX_BIN:$PATH"
+
 alias shython='source $HOME/scripts/shython.sh'
 
 start python_setup
@@ -123,3 +126,19 @@ case "$OSTYPE" in
 esac
 
 finish -s bash_profile
+# added by Anaconda3 2018.12 installer
+# >>> conda init >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$(CONDA_REPORT_ERRORS=false '/Users/matthew_hawthorn/anaconda3/bin/conda' shell.bash hook 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    \eval "$__conda_setup"
+else
+    if [ -f "/Users/matthew_hawthorn/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/matthew_hawthorn/anaconda3/etc/profile.d/conda.sh"
+        CONDA_CHANGEPS1=false conda activate base
+    else
+        \export PATH="/Users/matthew_hawthorn/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda init <<<
