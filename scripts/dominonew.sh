@@ -10,7 +10,7 @@ alias mydomino='cd $DOMINOPATH/$DOMINOUSER'
 
 if [ -d "$DOMINOPATH" ]; then
     for group in $(ls "$DOMINOPATH"); do
-        eval "alias $group='cd \$DOMINOPATH/$group'"
+        [ -d "$DOMINOPATH/$group" ] && eval "alias $group='cd \$DOMINOPATH/$group'"
     done
 fi
 unset group

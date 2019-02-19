@@ -219,7 +219,6 @@ killjupyter() {
     esac
     
     [ ${#ports[@]} -le 0 ] && echo "No ports selected or no jupyter servers running" && return 0
-    
     ports=($(for p in ${ports[@]}; do echo $p; done | sort | uniq))
     local f=mktemp    
     jupyter notebook list --json | jq '.pid, .port, .notebook_dir' | xargs -n3 > $f
