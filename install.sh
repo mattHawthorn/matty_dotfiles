@@ -42,7 +42,7 @@ LN_FLAGS=("${LN_FLAGS[@]}" "-s")
 echo "Passing flags ${LN_FLAGS[@]} to ln"
 
 FILES=("$@")
-RECURSE_DIRS=(".ipython" ".atom")
+RECURSE_DIRS=(".ipython" ".atom", ".jupyter")
 EXTRAS=("scripts")
 IGNORE=(".gitignore" ".git" ".DS_Store" ".idea")
 
