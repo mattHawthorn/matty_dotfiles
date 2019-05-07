@@ -155,6 +155,14 @@ complete -o nospace -F _cronjobs lscronjobs
 
 export BASHUTILS_IMPORTED=1
 
+blockheading ()
+{
+    local len="$((${#1} + 4))";
+    head -c $len < /dev/zero | tr '\0' '#';
+    printf '\n# %s #\n' "$1";
+    head -c $len < /dev/zero | tr '\0' '#';
+    echo
+}
 
 unicode() {
 local PY_SEARCH_UNICODE_SCRIPT='import sys, re, unicodedata as ud
