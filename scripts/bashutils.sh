@@ -177,3 +177,22 @@ print()
 '
 python -c "$PY_SEARCH_UNICODE_SCRIPT" "$@"
 }
+
+replaceall() { 
+    local dir="$1" search="$2" replace="$3" file new
+    if [ -d "$dir" ]; then
+         pushd "$dir"
+         for file in $(ls -A); do
+              replaceall "$file" "$search" "$replace" 
+         done
+         popd
+         new="${dir/$search/$replace}"
+         [ "$dir" != "$new" ] && mv "$dir" "$new"; 
+    else
+         file="$dir"
+         new="${file/$search/$replace}"
+         sed --in-place "s/$search/$replace/g" "$file";
+         [ "$file" != "$new" ] && mv "$file" "$new"
+    fi
+}
+

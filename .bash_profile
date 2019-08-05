@@ -76,7 +76,7 @@ alias la='ls -alF'
 start source_custom_scripts
 
 # custom scripts/utils
-for module in clipboard datify todo mathutils papertitle fileutils; do
+for module in clipboard datify todo mathutils papertitle fileutils bashutils; do
     source "$HOME/scripts/$module.sh"
 done
 
@@ -114,7 +114,7 @@ if [ -d ~/Desktop/sandbox ]; then
     alias sandbox='cd "$SANDBOX"'
 fi
 
-case "$OS_TYPE" in
+case "$OSTYPE" in
     darwin*) export EMAIL_ADDRESS=matthew.hawthorn@spglobal.com ;;
     linux*) export EMAIL_ADDRESS=hawthorn.matthew@gmail.com ;;
 esac
@@ -135,15 +135,15 @@ finish -s bash_profile
 # added by Anaconda3 2018.12 installer
 # >>> conda init >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$(CONDA_REPORT_ERRORS=false '/Users/matthew_hawthorn/anaconda3/bin/conda' shell.bash hook 2> /dev/null)"
+__conda_setup="$(CONDA_REPORT_ERRORS=false "$HOME/anaconda3/bin/conda" shell.bash hook 2> /dev/null)"
 if [ $? -eq 0 ]; then
     \eval "$__conda_setup"
 else
-    if [ -f "/Users/matthew_hawthorn/anaconda3/etc/profile.d/conda.sh" ]; then
-        . "/Users/matthew_hawthorn/anaconda3/etc/profile.d/conda.sh"
+    if [ -f ~/anaconda3/etc/profile.d/conda.sh ]; then
+        . "$HOME/anaconda3/etc/profile.d/conda.sh"
         CONDA_CHANGEPS1=false conda activate base
     else
-        \export PATH="/Users/matthew_hawthorn/anaconda3/bin:$PATH"
+        \export PATH="$HOME/anaconda3/bin:$PATH"
     fi
 fi
 unset __conda_setup
