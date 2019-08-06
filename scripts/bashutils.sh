@@ -178,7 +178,7 @@ print()
 python -c "$PY_SEARCH_UNICODE_SCRIPT" "$@"
 }
 
-replaceall() { 
+replaceall() {
     local dir="$1" search="$2" replace="$3" file new
     if [ -d "$dir" ]; then
          pushd "$dir"
@@ -195,4 +195,3 @@ replaceall() {
          [ "$file" != "$new" ] && mv "$file" "$new"
     fi
 }
-
