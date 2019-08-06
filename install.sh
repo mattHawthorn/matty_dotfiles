@@ -42,13 +42,28 @@ LN_FLAGS=("${LN_FLAGS[@]}" "-s")
 echo "Passing flags ${LN_FLAGS[@]} to ln"
 
 FILES=("$@")
-RECURSE_DIRS=(".ipython" ".atom", ".jupyter")
+RECURSE_DIRS=(".ipython" ".atom" ".jupyter")
 EXTRAS=("scripts")
 IGNORE=(".gitignore" ".git" ".DS_Store" ".idea")
 
 DOTFILESDIR="$(fullpath $(dirname $BASH_SOURCE))"
 TMPFILE="$(mktemp)"
 
+catarray() {
+    local i=0 n=$(eval 'echo ${#'$1'[@]}')
+    while [ $i -lt $n ]; do
+        eval 'echo ${'"$1[$i]}"
+        i=$((i+1))
+    done
+}
+
+intersection() {
+    { catarray $1; catarray $2; } | sort | uniq -d
+}
+
+difference() {
+    { catarray $1; catarray $2; catarray $2; } | sort | uniq -u
+}
 
 if [ ${#FILES[@]} -eq 0 ]; then
     echo "Finding relevant config files in $DOTFILESDIR"
@@ -66,9 +81,9 @@ if [ ${#FILES[@]} -eq 0 ]; then
         echo "$DOTFILESDIR/$file" >> $TMPFILE
     done
 else
-    for FILE in "${FILES[@]}"; do
-        echo "$DOTFILESDIR/$FILE" >> $TMPFILE
-    done
+    FILES=($(catarray FILES | while read line; do echo "${line%/}"; done; ))
+    difference FILES RECURSE_DIRS >> $TMPFILE
+    RECURSE_DIRS=($(intersection FILES RECURSE_DIRS))
 fi
 
 NFILES=$(wc -l $TMPFILE | cut -f 1 -d ' ')
@@ -110,7 +125,7 @@ rsymlink() {
 
 prompt_rsymlink() { 
     local a
-    read -p "recursively symlink $1 contents into $DIR/$1? " a
+    read -p "recursively symlink $(basename $1) contents into $DIR/$(basename $1)? " a
     case "$a" in 
         y|Y) rsymlink "$1" 
         ;; 
