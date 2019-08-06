@@ -196,3 +196,43 @@ replaceall() {
     fi
 }
 
+echoargs() { while [ ${1+x} ]; do echo "$1"; shift; done; }
+
+catarray() {
+    while [ ${1+x} ]; do
+        local i=0 n=$(eval 'echo ${#'$1'[@]}')
+        while [ $i -lt $n ]; do
+            eval 'echo ${'"$1[$i]}"
+            i=$((i+1))
+        done
+        shift
+    done
+}
+
+union() {
+    catarray $@ | sort | uniq
+}
+
+intersection() {
+    if [ $# -eq 1 ]; then
+        catarray $1
+    else
+        {
+            catarray $1
+            shift
+            intersection $@
+        } | sort | uniq -d
+    fi
+}
+
+difference() {
+    {
+        catarray $1;
+        shift
+        catarray $@ $@
+    } | sort | uniq -u
+}
+
+symmetric_difference() {
+    catarray $@ | sort | uniq -u
+}
