@@ -65,6 +65,11 @@ difference() {
     { catarray $1; catarray $2; catarray $2; } | sort | uniq -u
 }
 
+prepend() {
+    local line
+    while read line; do echo "$1$line"; done
+}
+
 if [ ${#FILES[@]} -eq 0 ]; then
     echo "Finding relevant config files in $DOTFILESDIR"
     echo
@@ -76,14 +81,12 @@ if [ ${#FILES[@]} -eq 0 ]; then
         cmd="$cmd -not -name '$file'"
     done
     eval "$cmd -exec echo {} \\;" > $TMPFILE
-    
-    for file in ${EXTRAS[@]}; do
-        echo "$DOTFILESDIR/$file" >> $TMPFILE
-    done
+
+    catarray EXTRAS | prepend "$DOTFILESDIR/" >> $TMPFILE
 else
     FILES=($(catarray FILES | while read line; do echo "${line%/}"; done; ))
-    difference FILES RECURSE_DIRS >> $TMPFILE
-    RECURSE_DIRS=($(intersection FILES RECURSE_DIRS))
+    difference FILES RECURSE_DIRS | prepend "$DOTFILESDIR/" >> $TMPFILE
+    RECURSE_DIRS=($(intersection FILES RECURSE_DIRS | prepend "$DOTFILESDIR/"))
 fi
 
 NFILES=$(wc -l $TMPFILE | cut -f 1 -d ' ')
