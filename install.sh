@@ -42,8 +42,7 @@ LN_FLAGS=("${LN_FLAGS[@]}" "-s")
 echo "Passing flags ${LN_FLAGS[@]} to ln"
 
 FILES=("$@")
-RECURSE_DIRS=(".ipython" ".atom" ".jupyter")
-EXTRAS=("scripts")
+RECURSE_DIRS=(".ipython" ".atom" ".jupyter", "scripts")
 IGNORE=(".gitignore" ".git" ".DS_Store" ".idea")
 
 DOTFILESDIR="$(fullpath $(dirname $BASH_SOURCE))"
@@ -81,8 +80,6 @@ if [ ${#FILES[@]} -eq 0 ]; then
         cmd="$cmd -not -name '$file'"
     done
     eval "$cmd -exec echo {} \\;" > $TMPFILE
-
-    catarray EXTRAS | prepend "$DOTFILESDIR/" >> $TMPFILE
 else
     FILES=($(catarray FILES | while read line; do echo "${line%/}"; done; ))
     difference FILES RECURSE_DIRS | prepend "$DOTFILESDIR/" >> $TMPFILE
