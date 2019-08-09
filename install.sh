@@ -42,7 +42,7 @@ LN_FLAGS=("${LN_FLAGS[@]}" "-s")
 echo "Passing flags ${LN_FLAGS[@]} to ln"
 
 FILES=("$@")
-RECURSE_DIRS=(".ipython" ".atom" ".jupyter", "scripts")
+RECURSE_DIRS=(".ipython" ".atom" ".jupyter" "scripts")
 IGNORE=(".gitignore" ".git" ".DS_Store" ".idea")
 
 DOTFILESDIR="$(fullpath $(dirname $BASH_SOURCE))"
@@ -86,7 +86,7 @@ else
     RECURSE_DIRS=($(intersection FILES RECURSE_DIRS | prepend "$DOTFILESDIR/"))
 fi
 
-NFILES=$(wc -l $TMPFILE | cut -f 1 -d ' ')
+NFILES=$(( $(wc -l $TMPFILE | cut -f 1 -d ' ') + ${#RECURSE_DIRS[@]} ))
 if [ $NFILES -eq 0 ]; then
     echo "No files to symlink!"
     exit 1
@@ -119,7 +119,7 @@ rsymlink() {
             echo "$DIR/$path already exists! refusing to overwrite"
         else
             ln ${LN_FLAGS[@]} "$DOTFILESDIR/$path" "$DIR/$path" 
-        fi    
+        fi
     done
 }
 
