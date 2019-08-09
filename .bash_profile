@@ -40,10 +40,6 @@ fi
 # bash-git-prompt
 [ -d ~/.bash-git-prompt ] && GIT_PROMPT_ONLY_IN_REPO=1 && source ~/.bash-git-prompt/gitprompt.sh
 
-# Mara's stuff
-# source ~/scripts/history/history.sh
-# source ~/scripts/prompt/prompt.sh
-# alias gawk=awk
 
 # extra path munging for specific machines, if needed
 [ -f ~/.bash_add_path ] && source ~/.bash_add_path
