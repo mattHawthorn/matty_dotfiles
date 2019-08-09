@@ -2,7 +2,7 @@
 [ ! "$BASHUTILS_IMPORTED" == 1 ] && source "$(dirname "$BASH_SOURCE")/bashutils.sh"
 
 # create a new Domino project
-DOMINOUSER="matthawthorn"
+DOMINOUSER="matthew_hawthorn"
 DOMINOPATH="$HOME/Domino"
 DOMINOTEMPLATEPATH="$DOMINOPATH/ProjectTemplate"
 

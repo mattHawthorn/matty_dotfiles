@@ -4,6 +4,8 @@
 # do this first to make GNU utils available in this script on Mac OS X
 which brew > /dev/null && source "$HOME/scripts/homebrew_setup.sh"
 
+# general bash helpers; some are needed to run this script
+source "$HOME/scripts/bashutils.sh"
 
 start bash_profile
 
@@ -71,7 +73,7 @@ alias la='ls -alF'
 start source_custom_scripts
 
 # custom scripts/utils
-for module in clipboard datify todo mathutils papertitle fileutils gitutils bashutils; do
+for module in clipboard datify todo mathutils papertitle fileutils gitutils; do
     source "$HOME/scripts/$module.sh"
 done
 
