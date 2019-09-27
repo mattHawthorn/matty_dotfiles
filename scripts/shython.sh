@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 echo '
-        _,qmmmm~,_                                                         .o                              
-       q#""MMMMMMM)                                                        (N                              
-       MA_/MMMMMMMM                                                  (N    (N                              
-       """""*MMMMMM ___                                          _   (N__  (N  __         __        ___    
-  ,QMMMMMMMMMMMMMMM MMMp_                                Nj     (N  ^VN^^  (N,d>*V@,   ,@>^^Vg    g9^"^<N, 
- &MMMMMMMMMMMMMMMMM MMMMp             .o                 Nj     (N   (N    (N     (N  (N     (N  (N     (N 
- MMMMMMMMMMMMMMMMM`qMMMMMp            (N       ===  ===  Nj     (N   (N    (N     (N  @@      N} (N     (N 
- MMMMMM9"_________qMMMMMMp            (N                 Nj     (N   (N    (N     (N  @@      N} (N     (N 
- MMMMM/_MMMMMMMMMMMMMMMMMb     __     (N   _             @@     (N   (N    (N     (N  `N     (N  (N     (N 
- WMMMM MMMMMMMMMMMMMMMMMW   ,@d^Vg.   (N,d>*V@,          `Wgg~gdVN    Wg,  (N     (N   `Wg,,g>   (N     (N 
-  WMMM MMMMMMMMMMMMMMMMW   (N     `h  (N     (N                 (@                                         
-    `` MMMMMM______        `Wgg~g.    (N     (N                 @)                                         
-       MMMMMMMMW"WM              `N}  (N     (N             ,,gS"                                          
-       WMMMMMMMp_WW        (N     N}  (N     (N                                                            
-        "MMMMMMMW"      *  `Wg,,,d^   (N     (N                                                            
+        _,qmmmm~,_
+       q#""MMMMMMM)                                                        .o
+       MA_/MMMMMMMM                                                        (N
+       """""*MMMMMM ___                                              (N    (N
+  ,QMMMMMMMMMMMMMMM MMMp_                                        _   (N__  (N  __         __        ___
+ &MMMMMMMMMMMMMMMMM MMMMp             .o                 Nj     (N  ^VN^^  (N,d>*V@,   ,@>^^Vg    g9^"^<N,
+ MMMMMMMMMMMMMMMMM`qMMMMMp            (N                 Nj     (N   (N    (N     (N  (N     (N  (N     (N
+ MMMMMM9"_________qMMMMMMp            (N       ===  ===  Nj     (N   (N    (N     (N  @@      N} (N     (N
+ MMMMM/_MMMMMMMMMMMMMMMMMb     __     (N   _             Nj     (N   (N    (N     (N  @@      N} (N     (N
+ WMMMM MMMMMMMMMMMMMMMMMW   ,@d^Vg.   (N,d>*V@,          @@     (N   (N    (N     (N  `N     (N  (N     (N
+  WMMM MMMMMMMMMMMMMMMMW   (N     `h  (N     (N          `Wgg~gdVN    Wg,  (N     (N   `Wg,,g>   (N     (N
+    `` MMMMMM______        `Wgg~g.    (N     (N                 (@
+       MMMMMMMMW"WM              `N}  (N     (N                 @)
+       WMMMMMMMp_WW        (N     N}  (N     (N             ,,gS"
+        "MMMMMMMW"      *  `Wg,,,d^   (N     (N
 
                            
 version 0.0
@@ -172,6 +172,7 @@ version 0.0
 
 FIELD_SEP=$'\t'
 FIFO_PREFIX=$(mktemp)
+LAMBDA_PREFIX=__lambda__
 DEFAULT_IFS="$IFS"
 
 
@@ -211,12 +212,14 @@ _parse_identifiers() {
 
 _iterargs() {
     # inside a function, use `_iterargs "$@" <&0 | { while read line; do ... }`
+    # for functions that can iterate over command line args or lines in stdin
     if [ $# -gt 0 ]; then
         for ((i=1;i<=$#;i++)); do echo "${@:$i:1}"; done;
     else
         cat -
     fi
 }
+
 
 #################
 # INTROSPECTION #
@@ -233,71 +236,68 @@ _typeflags() {
 }
 
 isinstance() {
-    local varname=$1 arg1 arg2; shift
-    arg1=$(_typeflags $varname) >/dev/null 2>/dev/null || unset arg1
-    arg2=$(type $varname) "$(type $1)" >/dev/null 2>/dev/null || unset arg2
+    [ $# -gt 1 ] ||
+        raise ValueError "isinstance requires >=2 args: identifier [typename [typenmame [...]]; got: "$@"" ||
+        return $?
 
-    [ ${arg1+x} ] && [ ${arg2+x} ] &&
-        raise NameError "$1 does not identify any value, function, command, or alias"
-
+    local varname="$1"; callable_types=() types=(); shift
     while [ $# -gt 0 ]; do
         case $1 in
             str|list|tuple|dict|int)
-                [ ${arg1+x} ] && continue
-                _isinstance_var $(_typeflags $varname) $1 && return 0
+                types=(${types[@]} $1)
                 ;;
             function|builtin|alias|executable)
-                [ ${arg2+x} ] && continue
-                _isinstance_callable "$(type $1)" $1 && return 0
+                callable_types=(${callable_types[@]} $1)
                 ;;
+            *) raise NameError "Unrecognized type alias: '$1'" || return $?
+        esac
+        shift
+    done
+    [ ${#types[@]} -gt 0 ] && _isinstance_var $varname ${types[@]} && return 0
+    [ ${#callable_types[@]} -gt 0 ] && _isinstance_callable $varname ${callable_types[@]} && return 0
+    return 1
+}
+
+_isinstance_var() {
+    local flags=$(_typeflags $1); shift
+    local first=${flags:0:1}
+    while [ $# -gt 0 ]; do
+        case $1 in
+            str)
+                case $first in
+                    -|u|l) return 0 ;;
+                esac ;;
+            list|array)
+                case $first in
+                    a) return 0 ;;
+                esac ;;
+            dict)
+                case $first in
+                    A) return 0 ;;
+                esac ;;
+            int)
+                case $first in
+                    i) return 0 ;;
+                esac ;;
         esac
         shift
     done
     return 1
 }
 
-_isinstance_var() {
-    local flags=$1
-    local first=${flags:0:1}
-
-    case $2 in
-        str)
-            case $first in
-                -|u|l) return 0 ;;
-                *) return 1 ;;
-            esac ;;
-        list|array)
-            case $first in
-                a) return 0 ;;
-                *) return 1 ;;
-            esac ;;
-        dict)
-            case $first in
-                A) return 0 ;;
-                *) return 1 ;;
-            esac ;;
-        int)
-            case $first in
-                i) return 0 ;;
-                *) return 1 ;;
-            esac ;;
-    esac
-}
-
 _isinstance_callable() {
-    case $2 in
-        function)
-            declare -f $2 >/dev/null 2>/dev/null
-            return $? ;;
-        builtin)
-            [ "$dec" == "${1%% builtin}" ] && return 1 || return 0 ;;
-        alias)
-            [ "$dec" == "${1%%*alias}" ] && return 1 || return 0 ;;
-        executable)
-            [ "$dec" == "${1#$ is}" ] && return 1 || return 0 ;;
-        *)
-            raise ValueError "must pass identifier, typename to isinstance()" ;;
-    esac
+echo $FUNCNAME
+    local name="$1" dec="$(type $1 2>/dev/null | head -1)"; shift
+    while [ $# -gt 0 ]; do
+        case $1 in
+            function|builtin|alias)
+                [ "$dec" == "${dec%%*$1}" ] && return 1 || return 0 ;;
+            executable)
+                [ "$dec" == "${dec#$name is}" ] && return 1 || return 0 ;;
+        esac
+        shift
+    done
+    return 1
 }
 
 type_() {
@@ -313,13 +313,22 @@ type_() {
     esac
 }
 
+_expr_type() {
+    # identifier, literal string, literal int, command?
+    [ "${1#'}" != "$1" ] || [ "${1#'}" != "$1" ] && echo str_literal && return
+    [[ "$1" ~= [0-9]+ ]] && echo int_literal && return
+
+}
+
 callable() {
-    isinstance "$1" function builtin alias ececutable
+    isinstance "$1" function builtin alias executable
 }
 
 notnone() {
     eval "[ \${$1+x} ]"
 }
+
+alias exists=notnone
 
 
 ##############
@@ -552,11 +561,13 @@ str.strip() {
 }
 
 str.rjust() {
-    printf "%""$1""s\n" "$2"
+    local s="$(printf "%""$1""s" "$2")"
+    echo "$s"
 }
 
 str.ljust() {
-    printf "%-""$1""s\n" "$2"
+    local s="$(printf "%-""$1""s" "$2")"
+    echo "$s"
 }
 
 str.add() {
@@ -735,16 +746,57 @@ repeat() {
 ##########
 
 lambda() {
-    local varnames=($(_parse_identifiers "$@"))
+    local varnames=($(_parse_identifiers "$@")) expression op name body
     shift $(len varnames)
-    [ "$1" == ':' ] && shift
-    local expression="$1"; shift
+
+    op="$1"
+    case "$op" in
+        :) shift; expression="$1"; shift
+            ;;
+        .:) expression="$1 $2"; shift; shift
+            ;;
+        *)
+            if [ ${#varnames[@]} -gt 0 ]; then
+                # .: was used with no :
+                local lastvar="${varnames[-1]}"
+                if [ "${lastvar%.}" != "$lastvar" ]; then
+                    expression=".: $1"; shift
+                    if [ "$lastvar" == '.' ]; then
+                        unset varnames[$((${#varnames[@]} - 1))]
+                    else
+                        varnames[$((${#varnames[@]} - 1))]="${lastvar%.}"
+                    fi
+                fi
+            else
+                expression="$1"; shift
+            fi
+            ;;
+    esac
+
+    name=$(_nextlambda)
+
+    body="$(echo "$name() {"
     for (( i=0; i<${#varnames[@]}; i++ )); do
-        eval "local ${varnames[i]}=$1"; shift
+        echo "local ${varnames[i]}=\"\$$((i+1))\""; shift
         # eval echo "${varnames[i]}: \$${varnames[i]}"
     done
-    # echo "$expression"
-    eval "$expression"
+    echo  "$expression"
+    echo "}")"
+
+    if eval "$body"; then
+        declare -g $name
+        echo "$name"
+    else
+        raise SyntaxError "$body"
+    fi
+}
+
+_nextlambda() {
+    local lastlambda=$(compgen -A function $LAMBDA_PREFIX | sort | tail -1) lastn nextn
+
+    declare -i lastn=$(echo ${lastlambda##$LAMBDA_PREFIX} | tr -s 0 ' ')
+    nextn=$(str.rjust 4 $(($lastn + 1)) | tr ' ' 0)
+    echo $LAMBDA_PREFIX$nextn
 }
 
 
@@ -939,7 +991,7 @@ raise() {
     else
         [ -f $SHYTHON_ERRFILE ] && ERROR_MSG="$(cat $SHYTHON_ERRFILE)"
     fi
-    echo "$errname: $ERROR_MSG"
+    echo "$errname: $ERROR_MSG" >&2
     return $code
     rm $SHYTHON_ERRFILE
 }
