@@ -129,6 +129,9 @@ esac
 
 finish -s bash_profile
 
+# custom keyboard setup, if available
+which ckb-next && ckb-next
+
 # added by Anaconda3 2018.12 installer
 # >>> conda init >>>
 # !! Contents within this block are managed by 'conda init' !!
