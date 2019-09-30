@@ -130,7 +130,7 @@ esac
 finish -s bash_profile
 
 # custom keyboard setup, if available
-which ckb-next && ckb-next &
+which ckb-next >/dev/null && ( ps -C ckb-next >/dev/null || ckb-next & >/dev/null )
 
 # added by Anaconda3 2018.12 installer
 start conda_init
