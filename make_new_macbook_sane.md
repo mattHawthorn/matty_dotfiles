@@ -34,6 +34,8 @@
 
 	`echo '/usr/local/bin/bash' >> /etc/shells && chsh -s /usr/local/bin/bash`
 
-8. install custom dotfiles and bash helpers (links brew-installed utils to their correct names via scripts/homebrew_setup.sh):
+9. install custom dotfiles and bash helpers (links brew-installed utils to their correct names via scripts/homebrew_setup.sh):
 
 	`cd ~ && mkdir git && cd git && git clone https://github.com/mattHawthorn/matty_dotfiles.git && cd matty_dotfiles && source scripts/homebrew_setup.sh && ./install.sh`
+
+10. install PyCharm, Anaconda

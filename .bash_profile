@@ -95,7 +95,7 @@ if [ -d ~/Desktop/sandbox ]; then
 fi
 
 case "$OSTYPE" in
-    darwin*) export EMAIL_ADDRESS=matthew.hawthorn@spglobal.com ;;
+    darwin*) export EMAIL_ADDRESS=matthew.hawthorn@snagajob.com ;;
     linux*) export EMAIL_ADDRESS=hawthorn.matthew@gmail.com ;;
 esac
 
