@@ -110,8 +110,6 @@ case "$OSTYPE" in
         ;;
 esac
 
-finish -s bash_profile
-
 # custom keyboard setup, if available
 which ckb-next >/dev/null && ( ps -C ckb-next >/dev/null || ckb-next & >/dev/null )
 
@@ -137,3 +135,5 @@ unset __conda_setup
 # <<< conda init <<<
 
 finish -s conda_init
+
+finish -s bash_profile
