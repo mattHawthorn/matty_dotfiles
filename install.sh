@@ -1,6 +1,6 @@
 if [ "$1" = '-h' ] || [ "$1" = "--help" ]; then
     echo
-    echo "Usage: ./install.sh [-x|--no-prompt] [--dir TARGET_DIR] [FILE1 [FILE2 [...]]]"
+    echo "Usage: ./install.sh [-x|--no-prompt] [--dir TARGET_DIR] [--<ln flag> [...]] [FILE1 [FILE2 [...]]]"
     echo
     echo "Install custom dotfiles into your home directory or alternately a custom directory."
     echo "Most files are symlinked directly but for some, whose parent apps have deeply nested "
