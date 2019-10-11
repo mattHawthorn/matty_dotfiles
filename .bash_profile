@@ -55,6 +55,8 @@ start aliases
 alias ll='ls -lF'
 alias la='ls -alF'
 
+alias whattime='date +%T'
+
 # development sandbox
 if [ -d ~/Desktop/sandbox ]; then
     SANDBOX=~/Desktop/sandbox/
