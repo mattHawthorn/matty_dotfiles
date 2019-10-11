@@ -103,7 +103,7 @@ brew install gnu-tar --with-default-names
 
 brew install gnu-which --with-default-names
 
-brew install gnutls --with-default-names
+# brew install gnutls --with-default-names
 
 # ==> Installing dependencies for gnutls: libtasn1, gmp, nettle, libunistring, libffi, p11-kit
 
@@ -273,7 +273,7 @@ brew install tmux
 # 🍺  /usr/local/Cellar/tmux/2.5: 10 files, 660.4KB
 
 
-brew install gnupg
+# brew install gnupg
 
 # ==> Installing dependencies for gnupg: npth, libgpg-error, libgcrypt, libksba, libassuan, pinentry, adns, libusb
 
@@ -470,7 +470,6 @@ brew install bash
 
 # ==> Installing bash
 
-
 # ****************************
 # ******* ==> Caveats ********
 # ****************************
@@ -481,11 +480,6 @@ brew install bash
 # ==> Summary
 # 🍺  /usr/local/Cellar/bash/4.4.12: 146 files, 8.8MB
 
-brew link --overwrite bash
-
-# Warning: Already linked: /usr/local/Cellar/bash/4.4.12
-# To relink: brew unlink bash && brew link bash
-
 # bash --version
 # GNU bash, version 3.2.57(1)-release (x86_64-apple-darwin16)
 
@@ -493,37 +487,14 @@ brew link --overwrite bash
 sudo nano /etc/shells
 
 
-brew install freetds --with-msdblib --with-odbc-wide --with-krb5 --with-unixodbc
-
-# ==> ./configure --prefix=/usr/local/Cellar/freetds/1.00.63 --with-tdsver=7.3 --mandir=/usr/local/Cellar/freetds/1.00.63/share/man --with-openssl=/usr/local/opt/openssl --with-unixodbc=/usr/local/opt/unixodbc --
-# 🍺  /usr/local/Cellar/freetds/1.00.63: 2,098 files, 12.8MB, built in 4 minutes 37 seconds
-
-brew install freetds@0.91 --with-msdblib --with-odbc-wide --with-krb5 --with-unixodbc
-
-# ==> ./configure --prefix=/usr/local/Cellar/freetds@0.91/0.91.112 --with-tdsver=7.1 --mandir=/usr/local/Cellar/freetds@0.91/0.91.112/share/man --with-openssl=/usr/local/opt/openssl --with-unixodbc=/usr/local/opt
-
-# ****************************
-# ******* ==> Caveats ********
-# ****************************
-# This formula is keg-only, which means it was not symlinked into /usr/local,
-# because this is an alternate version of another formula.
-
-# If you need to have this software first in your PATH run:
-#   echo 'export PATH="/usr/local/opt/freetds@0.91/bin:$PATH"' >> ~/.bash_profile
-
-# For compilers to find this software you may need to set:
-#     LDFLAGS:  -L/usr/local/opt/freetds@0.91/lib
-#     CPPFLAGS: -I/usr/local/opt/freetds@0.91/include
-
-# ==> Summary
-# 🍺  /usr/local/Cellar/freetds@0.91/0.91.112: 767 files, 11.0MB, built in 3 minutes 39 seconds
-
-brew install sqlite --with-functions --with-session --with-fts --with-dbstat
+# conda usually takes care of this
+# brew install sqlite --with-functions --with-session --with-fts --with-dbstat
 
 # ==> ./configure --prefix=/usr/local/Cellar/sqlite/3.20.1 --enable-dynamic-extensions --enable-readline --disable-editline
 # SHA256 MISMATCH when --with-docs included
 
-brew install bash-git-prompt
+# git clone is preferred here
+# brew install bash-git-prompt
 
 # ==> Caveats
 # You should add the following to your .bashrc (or equivalent):
