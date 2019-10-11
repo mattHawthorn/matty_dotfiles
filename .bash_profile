@@ -7,8 +7,10 @@ which brew > /dev/null && source "$HOME/scripts/homebrew_setup.sh"
 # general bash helpers; some are needed to run this script
 source "$HOME/scripts/bashutils.sh"
 
+
 start bash_profile
 
+start shell_config
 # interactive shell config
 
 # don't put duplicate lines or lines starting with space in the history.
@@ -37,20 +39,36 @@ else
     PS1='\u@\h:\w\$'
 fi
 
-
 # bash-git-prompt
 [ -d ~/.bash-git-prompt ] && GIT_PROMPT_ONLY_IN_REPO=1 && source ~/.bash-git-prompt/gitprompt.sh
-
 
 # extra path munging for specific machines, if needed
 [ -f ~/.bash_add_path ] && source ~/.bash_add_path
 
-# music player
-alias music=rhythmbox
+
+start aliases
 
 # basic aliases
 alias ll='ls -lF'
 alias la='ls -alF'
+
+# development sandbox
+if [ -d ~/Desktop/sandbox ]; then
+    SANDBOX=~/Desktop/sandbox/
+    alias sandbox='cd "$SANDBOX"'
+fi
+
+# google calendar CLI
+if which gcalcli > /dev/null; then
+    alias today='gcalcli agenda --nodeclined --no-military'
+    alias thisweek='gcalcli calw --no-military'
+    alias thismonth='gcalcli calm --no-military'
+fi
+
+finish -s aliases
+
+
+finish -s shell_config
 
 
 start source_custom_scripts
@@ -60,19 +78,18 @@ for module in clipboard datify todo mathutils papertitle fileutils gitutils; do
     source "$HOME/scripts/$module.sh"
 done
 
-TEX_BIN="/usr/local/texlive/2018basic/bin/x86_64-darwin"
-[ -d "$TEX_BIN" ] && export PATH="$TEX_BIN:$PATH"
-
 alias shython='source $HOME/scripts/shython.sh'
 
+
 start python_setup
+
 source "$HOME/scripts/pyutils.sh"
 export PATH="$HOME/anaconda3/bin/:$PATH"
 set_python_dev_aliases
 set_conda_env_aliases ~/.conda_env_aliases
-# domino project start helper
-which domino > /dev/null && source "$HOME/scripts/dominonew.sh"
+
 finish -s python_setup
+
 
 # docker
 source "$HOME/scripts/dockerutils.sh"
@@ -83,25 +100,19 @@ source "$HOME/scripts/dockerutils.sh"
 # Actually, this is the recommended way by the authors of bash_completion:
 [ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
 
-# python completions via argcomplete
-export PYTHON_ARGCOMPLETE_OK=true
-
 finish -s source_custom_scripts
 
-# development sandbox
-if [ -d ~/Desktop/sandbox ]; then
-    SANDBOX=~/Desktop/sandbox/
-    alias sandbox='cd "$SANDBOX"'
-fi
 
+# os-specific
 case "$OSTYPE" in
-    darwin*) export EMAIL_ADDRESS=matthew.hawthorn@snagajob.com ;;
-    linux*) export EMAIL_ADDRESS=hawthorn.matthew@gmail.com ;;
-esac
-
-# .profile
-case "$OSTYPE" in
+    darwin*)
+        export EMAIL_ADDRESS=matthew.hawthorn@snagajob.com
+        TEX_BIN="/usr/local/texlive/2018basic/bin/x86_64-darwin"
+        ;;
     linux*)
+        export EMAIL_ADDRESS=hawthorn.matthew@gmail.com
+        # music player
+        alias music=rhythmbox
         if [ ! -t 0 ] && [ -n "$BASH" ] && [ -r ~/.bashrc ]; then
             start source_bashrc
             . ~/.bashrc
@@ -110,8 +121,10 @@ case "$OSTYPE" in
         ;;
 esac
 
+
 # custom keyboard setup, if available
 which ckb-next >/dev/null && ( ps -C ckb-next >/dev/null || ckb-next & >/dev/null )
+
 
 # added by Anaconda3 2018.12 installer
 start conda_init
