@@ -24,7 +24,11 @@
 
 5. install latest bash and gnutils:
 
-	`brew install bash gnu-which gnu-tar gnu-which gnu-sed awk coreutils gzip grep rsync tree`
+	```bash
+	brew install bash gnu-which gnu-tar gnu-sed awk less grep wget \
+         coreutils findutils binutils diffutils \
+         watch tree tmux rsync gzip unzip git make nano jq
+    ```
 
 6. install bash-git-prompt:
 
