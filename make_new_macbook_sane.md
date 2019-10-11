@@ -9,10 +9,14 @@
 	[https://pqrs.org/osx/karabiner/](https://pqrs.org/osx/karabiner/)
 
 3. re-map keys:
-
-	- left_control -> fn
-	- fn -> left_control
-	- right option -> right control
+    
+    1. Internal
+        - left_control -> fn
+        - fn -> left_control
+        - right option -> right control
+    2. External
+        - option/alt -> command
+        - command -> option/alt
 
 4. install homebrew:
 
@@ -20,7 +24,7 @@
 
 5. install latest bash and gnutils:
 
-	`brew install bash gnu-which gnu-tar gnu-which gnu-sed awk coreutils gzip grep rsync`
+	`brew install bash gnu-which gnu-tar gnu-which gnu-sed awk coreutils gzip grep rsync tree`
 
 6. install bash-git-prompt:
 

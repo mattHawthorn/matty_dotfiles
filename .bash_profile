@@ -4,6 +4,9 @@
 # do this first to make GNU utils available in this script on Mac OS X
 which brew > /dev/null && source "$HOME/scripts/homebrew_setup.sh"
 
+# python path - might be needed for `which` calls to python command line utils later in this script
+[ -d "$HOME/anaconda3/bin/" ] && export PATH="$HOME/anaconda3/bin/:$PATH"
+
 # general bash helpers; some are needed to run this script
 source "$HOME/scripts/bashutils.sh"
 
@@ -84,7 +87,6 @@ alias shython='source $HOME/scripts/shython.sh'
 start python_setup
 
 source "$HOME/scripts/pyutils.sh"
-export PATH="$HOME/anaconda3/bin/:$PATH"
 set_python_dev_aliases
 set_conda_env_aliases ~/.conda_env_aliases
 
