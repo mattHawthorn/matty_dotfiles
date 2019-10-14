@@ -199,6 +199,9 @@ set_python_dev_aliases() {
         linux*) 
             PYCHARM_DIR="$(find /opt -maxdepth 1 -type d -name 'pycharm*' | sort -V | tail -n 1)"
             alias pycharm="$PYCHARM_DIR/bin/pycharm.sh"
+            charm() {
+                pycharm $@ &
+            }
             ;;
         darwin*) 
             PYCHARM_DIR='/Applications/PyCharm\ CE.app'

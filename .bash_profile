@@ -70,6 +70,8 @@ if which gcalcli > /dev/null; then
     alias thismonth='gcalcli calm --no-military'
 fi
 
+alias shython='source $HOME/scripts/shython.sh'
+
 finish -s aliases
 
 
@@ -82,8 +84,6 @@ start source_custom_scripts
 for module in clipboard datify todo mathutils papertitle fileutils gitutils; do
     source "$HOME/scripts/$module.sh"
 done
-
-alias shython='source $HOME/scripts/shython.sh'
 
 
 start python_setup
