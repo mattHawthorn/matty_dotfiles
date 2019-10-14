@@ -200,7 +200,7 @@ set_python_dev_aliases() {
             PYCHARM_DIR="$(find /opt -maxdepth 1 -type d -name 'pycharm*' | sort -V | tail -n 1)"
             alias pycharm="$PYCHARM_DIR/bin/pycharm.sh"
             charm() {
-                pycharm $@ &
+                $PYCHARM_DIR/bin/pycharm.sh $@ &
             }
             ;;
         darwin*) 
