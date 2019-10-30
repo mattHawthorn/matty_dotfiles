@@ -65,7 +65,7 @@ fi
 
 # google calendar CLI
 if which gcalcli > /dev/null; then
-    alias today='gcalcli agenda --nodeclined --no-military'
+    alias today='gcalcli agenda --nodeclined --no-military --details url --details length --details email "$(date +"%a %H:00:00")" "$(date +"%a 11:59:59 PM")"'
     alias thisweek='gcalcli calw --no-military'
     alias thismonth='gcalcli calm --no-military'
 fi
