@@ -91,6 +91,8 @@ start python_setup
 source "$HOME/scripts/pyutils.sh"
 set_python_dev_aliases
 set_conda_env_aliases ~/.conda_env_aliases
+# s3 cache util writes here
+export S3_CACHE_DIR=~/.s3_cache
 
 finish -s python_setup
 
