@@ -70,6 +70,38 @@ if which gcalcli > /dev/null; then
     alias thismonth='gcalcli calm --no-military'
 fi
 
+# browser
+case "$OSTYPE" in
+    linux*)
+        export BROWSER=firefox ;;
+    darwin*)
+        export BROWSER='open -a firefox -g' ;;
+esac
+
+# goto meetings
+hopinto() {
+    local meetinglink
+    if [ $# -eq 0 ]; then
+        echo "searching for upcoming meetings"
+        meetinglink=$(today | grep 'Hangout Link:' | head -1 | while read line; do echo ${line#*Hangout Link:}; done)
+    else
+        echo "searching for upcoming $1 meetings"
+        meetinglink=$(today | grep -i -A 4 $1 | grep 'Hangout Link:' | head -1 | while read line; do echo ${line#*Hangout Link:}; done)
+    fi
+    if [ -z "$meetinglink" ]; then
+        echo "No meeting link found! run 'today' to see upcoming events"
+        return 1
+    else
+        echo "Entering $1 meeting at ${meetinglink}"
+        $BROWSER "$meetinglink"
+    fi
+}
+alias meeting='hopinto'
+alias grooming='hopinto grooming'
+alias scrum='hopinto scrum'
+alias standup='hopinto scrum'
+
+
 alias shython='source $HOME/scripts/shython.sh'
 
 finish -s aliases
