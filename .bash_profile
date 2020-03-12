@@ -101,6 +101,9 @@ alias grooming='hopinto grooming'
 alias scrum='hopinto scrum'
 alias standup='hopinto scrum'
 
+alias shrug='echo "¯\_(ツ)_/¯"'
+alias fuckthis='echo "(╯°□°)╯︵ ┻━┻"'
+alias fuckthisisfine='echo "(┛❍ᴥ❍﻿)┛彡┻━┻"'
 
 alias shython='source $HOME/scripts/shython.sh'
 
