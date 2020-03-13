@@ -9,5 +9,9 @@ import functools
 import itertools
 import operator
 import multiprocessing as mp
-import requests
-import tqdm
+from typing import *
+try:
+    import requests
+    import tqdm
+except ImportError:
+    pass
