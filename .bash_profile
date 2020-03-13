@@ -186,4 +186,8 @@ unset __conda_setup
 # <<< conda initialize <<<
 
 finish -s conda_init
+
+# added by travis gem
+[ -f /home/matt/.travis/travis.sh ] && source /home/matt/.travis/travis.sh
+
 finish -s bash_profile
