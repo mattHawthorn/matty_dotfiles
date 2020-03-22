@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 if [ "$1" = '-h' ] || [ "$1" = "--help" ]; then
     echo
     echo "Usage: ./install.sh [-x|--no-prompt] [--dir TARGET_DIR] [--<ln flag> [...]] [FILE1 [FILE2 [...]]]"
@@ -42,7 +44,7 @@ LN_FLAGS=("${LN_FLAGS[@]}" "-s")
 echo "Passing flags ${LN_FLAGS[@]} to ln"
 
 FILES=("$@")
-RECURSE_DIRS=(".ipython" ".atom" ".jupyter" "scripts")
+RECURSE_DIRS=(".ipython" ".atom" ".jupyter" "scripts" ".bash_completion.d")
 IGNORE=(".gitignore" ".git" ".DS_Store" ".idea")
 
 DOTFILESDIR="$(fullpath $(dirname $BASH_SOURCE))"
