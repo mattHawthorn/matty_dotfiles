@@ -13,7 +13,7 @@ deactivate
 install
   - + _bourbaki_complete_choices PACKAGE_NAME
   -h,--help 0(?)
-  --file 1(*)
+  --file 1(*) _bourbaki_complete_files .txt
   --name 1(?) _complete_conda_envs
   -c,--channel 1(?)
   --use-local 0(?)
@@ -39,7 +39,7 @@ install
 create
   -h,--help 0(?)
   --clone 1(?) ENV
-  --file 1(*) _bourbaki_complete_files .yml
+  --file 1(*) _bourbaki_complete_files .txt
   --dev 0(?)
   --name 1(?) _complete_conda_envs
   -c,--channel
@@ -67,7 +67,7 @@ env
   create
     -h,--help 0(?)
     --name 1(?) _complete_conda_envs
-    -f,--file 1(?) _bourbaki_complete_files .yml
+    -f,--file 1(?) _bourbaki_complete_files .yml .yaml
     --offline 0(?)
     --force 0(?)
     --prune 0(?)
@@ -85,7 +85,7 @@ env
   update
     -h,--help 0(?)
     --name 1(?) _complete_conda_envs
-    -f,--file 1(?) _bourbaki_complete_files .yml
+    -f,--file 1(?) _bourbaki_complete_files .yml .yaml
     --prune 0(?)
     --json 0(?)
     -q,--quiet 0(?)
@@ -120,7 +120,7 @@ search
 update
   - + _bourbaki_complete_choices PACKAGE_NAME
   -h,--help 0(?)
-  --file 1(*)
+  --file 1(*) _bourbaki_complete_files .txt
   --name 1(?) _complete_conda_envs
   -c,--channel 1(?)
   --use-local 0(?)
@@ -178,8 +178,13 @@ uninstall
 """
 }
 
+
+_list_conda_envs() {
+  conda env list --json | jq -r '.envs[] | split("/") | .[-1]'
+}
+
 _complete_conda_envs() {
-    _bourbaki_complete_from_stdout conda env list --json '|' jq -r "'.envs[] | split(\"/\") | .[-1]'"
+    _bourbaki_complete_from_stdout _list_conda_envs
 }
 
 complete -o bashdefault -o filenames -F _complete_conda conda
