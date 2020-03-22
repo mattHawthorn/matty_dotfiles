@@ -142,6 +142,16 @@ source "$HOME/scripts/dockerutils.sh"
 # Actually, this is the recommended way by the authors of bash_completion:
 [ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
 
+install_bash_completions() {
+    if [ -d ~/.bash_completion.d/ ]; then
+        for completion_script in $(ls ~/.bash_completion.d/); do
+            source ~/.bash_completion.d/$completion_script
+        done
+    fi
+}
+
+install_bash_completions
+
 finish -s source_custom_scripts
 
 
