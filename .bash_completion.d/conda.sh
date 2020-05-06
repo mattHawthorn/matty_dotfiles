@@ -5,7 +5,7 @@ _bourbaki_complete """
 -h,--help 0(?)
 -V,--version 0(?)
 activate
-  - 1 _complete_conda_envs
+  - 1 _bourbaki_complete_from_stdout _list_conda_envs
   -h,--help 0(?)
   --stack 0(?)
   --no-stack 0(?)
@@ -14,7 +14,7 @@ install
   - + _bourbaki_complete_choices PACKAGE_NAME
   -h,--help 0(?)
   --file 1(*) _bourbaki_complete_files .txt
-  --name 1(?) _complete_conda_envs
+  -n,--name 1(?) _bourbaki_complete_from_stdout _list_conda_envs
   -c,--channel 1(?)
   --use-local 0(?)
   --override-channels 0(?)
@@ -41,7 +41,7 @@ create
   --clone 1(?) ENV
   --file 1(*) _bourbaki_complete_files .txt
   --dev 0(?)
-  --name 1(?) _complete_conda_envs
+  -n,--name 1(?) _bourbaki_complete_from_stdout _list_conda_envs
   -c,--channel
   -p,--prefix 1(?) PATH
   --use-local 0(?)
@@ -66,7 +66,7 @@ env
     -v,--verbose 0(*)
   create
     -h,--help 0(?)
-    --name 1(?) _complete_conda_envs
+    -n,--name 1(?) _bourbaki_complete_from_stdout _list_conda_envs
     -f,--file 1(?) _bourbaki_complete_files .yml .yaml
     --offline 0(?)
     --force 0(?)
@@ -76,7 +76,7 @@ env
     -v,--verbose 0(*)
   remove
     -h,--help 0(?)
-    --name 1(?) _complete_conda_envs
+    -n,--name 1(?) _bourbaki_complete_from_stdout _list_conda_envs
     -d,--dry-run 0(?)
     --json 0(?)
     -q,--quiet 0(?)
@@ -84,7 +84,7 @@ env
     -y,--yes 0(?)
   update
     -h,--help 0(?)
-    --name 1(?) _complete_conda_envs
+    -n,--name 1(?) _bourbaki_complete_from_stdout _list_conda_envs
     -f,--file 1(?) _bourbaki_complete_files .yml .yaml
     --prune 0(?)
     --json 0(?)
@@ -93,7 +93,7 @@ env
 list
   - ?(?) PACKAGE_REGEX
   -h,--help 0(?)
-  --name 1(?) _complete_conda_envs
+  -n,--name 1(?) _bourbaki_complete_from_stdout _list_conda_envs
   --show-channel-urls 0(?)
   -c,--canonical 0(?)
   -f,--full-name 0(?)
@@ -121,7 +121,7 @@ update
   - + _bourbaki_complete_choices PACKAGE_NAME
   -h,--help 0(?)
   --file 1(*) _bourbaki_complete_files .txt
-  --name 1(?) _complete_conda_envs
+  -n,--name 1(?) _bourbaki_complete_from_stdout _list_conda_envs
   -c,--channel 1(?)
   --use-local 0(?)
   --override-channels 0(?)
@@ -165,7 +165,7 @@ info
 uninstall
   - + _bourbaki_complete_choices PACKAGE_NAME
   -h,--help 0(?)
-  --name 1(?) _complete_conda_envs
+  -n,--name 1(?) _bourbaki_complete_from_stdout _list_conda_envs
   -c,--channel 1(?)
   --use-local 0(?)
   --all 0(?)
@@ -180,11 +180,7 @@ uninstall
 
 
 _list_conda_envs() {
-  conda env list --json | jq -r '.envs[] | split("/") | .[-1]'
+  ls $CONDA_PREFIX/envs
 }
 
-_complete_conda_envs() {
-    _bourbaki_complete_from_stdout _list_conda_envs
-}
-
-complete -o bashdefault -o filenames -F _complete_conda conda
+complete -o bashdefault -F _complete_conda conda
