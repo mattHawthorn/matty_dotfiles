@@ -179,6 +179,8 @@ uninstall
 }
 
 
+[ -z "$CONDA_PREFIX" ] && CONDA_PREFIX=$(conda info --base)
+
 _list_conda_envs() {
   ls $CONDA_PREFIX/envs
 }
