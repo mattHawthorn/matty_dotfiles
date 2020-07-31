@@ -179,10 +179,11 @@ uninstall
 }
 
 
-[ -z "$CONDA_PREFIX" ] && CONDA_PREFIX=$(conda info --base)
+[ -z "$_CONDA_PREFIX" ] && _CONDA_PREFIX=$(conda info --base)
 
 _list_conda_envs() {
-  ls $CONDA_PREFIX/envs
+  ls $_CONDA_PREFIX/envs
 }
 
 complete -o bashdefault -F _complete_conda conda
+complete -o bashdefault -F _complete_conda mamba
