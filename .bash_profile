@@ -4,6 +4,9 @@
 # do this first to make GNU utils available in this script on Mac OS X
 which brew > /dev/null && source "$HOME/scripts/homebrew_setup.sh"
 
+# put haskell stack builds on the path
+[ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin/:$PATH"
+
 # python path - might be needed for `which` calls to python command line utils later in this script
 [ -d "$HOME/anaconda3/bin/" ] && export PATH="$HOME/anaconda3/bin/:$PATH"
 
