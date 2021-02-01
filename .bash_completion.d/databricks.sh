@@ -90,9 +90,9 @@ _db_list_job_ids() {
   [ -z "$profile" ] || databricks --profile $profile jobs list | cut -f 1 -d ' '
 }
 
-export alias dbdatasci='databricks --profile datasci'
-export alias dbdev='databricks --profile dev'
-export alias dbprod='databricks --profile prod'
+alias dbdatasci='databricks --profile datasci'
+alias dbdev='databricks --profile dev'
+alias dbprod='databricks --profile prod'
 
 complete -o bashdefault -F _complete_databricks databricks
 complete -o bashdefault -F _complete_databricks dbdatasci
