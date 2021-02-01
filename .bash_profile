@@ -123,6 +123,7 @@ for module in clipboard datify todo mathutils papertitle fileutils gitutils; do
     source "$HOME/scripts/$module.sh"
 done
 
+[ -f ~/.sdkman/bin/sdkman-init.sh ] && source ~/.sdkman/bin/sdkman-init.sh
 
 start python_setup
 
