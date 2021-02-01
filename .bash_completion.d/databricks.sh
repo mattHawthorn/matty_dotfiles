@@ -95,12 +95,13 @@ alias dbdev='databricks --profile dev'
 alias dbprod='databricks --profile prod'
 
 dbconnect() {
+  local env
+  env=$1; shift
   # alias for databricks-connect to manage different envs, since it doesn't support a single config file for all envs
-  [ ! -f ~/.databricks-connect.d/$1 ] && echo "dbconnect takes a positional arg, one of: $(ls -x ~/.databricks-connect.d)" && return 1
-  shift
+  [ ! -f ~/.databricks-connect.d/$env ] && echo "dbconnect takes a positional arg, one of: $(ls -x ~/.databricks-connect.d)" && return 1
   [ $# -eq 0 ] && databricks-connect && return $? || return $?
   [ -L ~/.databricks-connect ] && rm ~/.databricks-connect
-  ln -s ~/.databricks-connect.d/$1 ~/.databricks-connect && databricks-connect "$@"
+  ln -sT ~/.databricks-connect.d/$env ~/.databricks-connect && databricks-connect "$@" || return $?
 }
 
 complete -o bashdefault -F _complete_databricks databricks
