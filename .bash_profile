@@ -10,6 +10,9 @@ which brew > /dev/null && source "$HOME/scripts/homebrew_setup.sh"
 # python path - might be needed for `which` calls to python command line utils later in this script
 [ -d "$HOME/anaconda3/bin/" ] && export PATH="$HOME/anaconda3/bin/:$PATH"
 
+# kubectl path
+[ -d $HOME/kubectl_*/bin ] && export PATH=$(echo $HOME/kubectl_*/bin)":$PATH"
+
 # general bash helpers; some are needed to run this script
 source "$HOME/scripts/bashutils.sh"
 
