@@ -146,7 +146,7 @@ source "$HOME/scripts/dockerutils.sh"
 [ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
 
 # stack completions
-which stack && eval "$(stack --bash-completion-script stack)"
+which stack >/dev/null && eval "$(stack --bash-completion-script stack)"
 
 install_bash_completions() {
     if [ -d ~/.bash_completion.d/ ]; then
