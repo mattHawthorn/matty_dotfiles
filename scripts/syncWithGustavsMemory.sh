@@ -8,7 +8,7 @@ DATA="/Datasets"
 PICTURES="/Pictures"
 PROJECTS="/Projects"
 DOCUMENTS="/Documents"
-GIT="/Git"
+GIT="/git"
 CERTS="/certs"
 SCRIPTS="/scripts"
 
