@@ -10,11 +10,22 @@ which brew > /dev/null && source "$HOME/scripts/homebrew_setup.sh"
 # python path - might be needed for `which` calls to python command line utils later in this script
 [ -d "$HOME/anaconda3/bin/" ] && export PATH="$HOME/anaconda3/bin/:$PATH"
 
+
 # general bash helpers; some are needed to run this script
 source "$HOME/scripts/bashutils.sh"
 
-
 start bash_profile
+
+start pyenv_init
+
+# pyenv
+if [ -d "$HOME/.pyenv/bin" ]; then
+  export PATH="~/.pyenv/bin:$PATH"
+  eval "$(pyenv init -)"
+  eval "$(pyenv virtualenv-init -)"
+fi
+
+finish pyenv_init
 
 start shell_config
 # interactive shell config
@@ -110,10 +121,10 @@ alias fuckthisisfine='echo "(┛❍ᴥ❍﻿)┛彡┻━┻"'
 
 alias shython='source $HOME/scripts/shython.sh'
 
-finish -s aliases
+finish aliases
 
 
-finish -s shell_config
+finish shell_config
 
 
 start source_custom_scripts
@@ -133,11 +144,13 @@ set_conda_env_aliases ~/.conda_env_aliases
 export S3_CACHE_DIR=~/.s3_cache
 export SAGEMAKER_PROJECT_DIR=~/git/snag/
 
-finish -s python_setup
+finish python_setup
 
 
 # docker
 source "$HOME/scripts/dockerutils.sh"
+
+start completions
 
 # completions
 # >> source "$HOME/scripts/bash_completion.sh"
@@ -158,14 +171,15 @@ install_bash_completions() {
 
 install_bash_completions
 
-finish -s source_custom_scripts
+finish completions
+
+finish source_custom_scripts
 
 
 # os-specific
 case "$OSTYPE" in
     darwin*)
-        export EMAIL_ADDRESS=matthew.hawthorn@snagajob.com
-        TEX_BIN="/usr/local/texlive/2018basic/bin/x86_64-darwin"
+        export EMAIL_ADDRESS=matt.hawthorn@trillianthealth.com
         ;;
     linux*)
         export EMAIL_ADDRESS=hawthorn.matthew@gmail.com
@@ -174,7 +188,7 @@ case "$OSTYPE" in
         if [ ! -t 0 ] && [ -n "$BASH" ] && [ -r ~/.bashrc ]; then
             start source_bashrc
             . ~/.bashrc
-            finish -d source_bashrc
+            finish source_bashrc
         fi
         ;;
 esac
@@ -201,9 +215,9 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
-finish -s conda_init
+finish conda_init
 
 # added by travis gem
 [ -f /home/matt/.travis/travis.sh ] && source /home/matt/.travis/travis.sh
 
-finish -s bash_profile
+finish bash_profile
