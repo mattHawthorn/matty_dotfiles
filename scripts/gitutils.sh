@@ -9,12 +9,28 @@ alias pushthis='git push $(thisremote) $(thisbranch)'
 alias pullthis='git fetch; git merge $(thisremote)/$(thisbranch)'
 
 update_gh_token() {
-    local url="$(git remote get-url origin)" new_url
+    local token="$1" remote="${2:-origin}" url new_url
+    if [ -z "$token" ]; then
+        echo "Must pass token as first arg"
+        return 1
+    fi
+    url="$(git remote get-url "${remote}")"
+    if [ $? -ne 0 ]; then
+        echo "Error getting URL for remote '${remote}'; does it exist?"
+        return 1
+    fi
     if [ "${url#https:}" != "$url" ]; then
-        new_url="https://${1}@${url#*@}"
-        echo "Updating token for remote url ${url} to ${new_url}"
+        if [ "${url#*@}" == "$url" ]; then
+            echo "Warning: no token in existing URL ${url}; adding one in"
+            new_url="https://${token}@${url#https://}"
+        else
+            new_url="https://${token}@${url#*@}"
+        fi
+        echo "Updating token for remote '${remote}' URL ${url} to ${new_url}"
+        git remote set-url "$remote" "$new_url"
     else
-        echo "Non-https remote URL ${url}; can't update token"
+        echo "Non-https remote '${remote}' URL ${url}; can't update token"
+        return 1
     fi
 }
 
