@@ -8,6 +8,16 @@ alias pushthis='git push $(thisremote) $(thisbranch)'
 
 alias pullthis='git fetch; git merge $(thisremote)/$(thisbranch)'
 
+update_gh_token() {
+    local url="$(git remote get-url origin)" new_url
+    if [ "${url#https:}" != "$url" ]; then
+        new_url="https://${1}@${url#*@}"
+        echo "Updating token for remote url ${url} to ${new_url}"
+    else
+        echo "Non-https remote URL ${url}; can't update token"
+    fi
+}
+
 branch_diff() {
     if [ $# -eq 0 ]; then
         echo "Print a summary of the difference between two git refs in terms of commits."
