@@ -2,7 +2,7 @@
 
 alias thisbranch='git symbolic-ref --short HEAD'
 
-alias thisremote='git remote show'
+alias thisremote='git remote show | head -1'
 
 alias pushthis='git push $(thisremote) $(thisbranch)'
 
