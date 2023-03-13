@@ -122,6 +122,7 @@ alias fuckthis='echo "(╯°□°)╯︵ ┻━┻"'
 alias fuckthisisfine='echo "(┛❍ᴥ❍﻿)┛彡┻━┻"'
 
 alias shython='source $HOME/scripts/shython.sh'
+alias pr='poetry run'
 
 finish aliases
 
