@@ -6,8 +6,8 @@ _bourbaki_complete """
 -V,--version 0(?)
 -v,--verbose 0(*)
 run
-  - 1 _command
-  - 1
+  - 1 _bourbaki_complete_from_stdout compgen -c
+  - * _command_offset 2
   --ansi 0(?)
   --no-ansi 0(?)
   -V,--version 0(?)
