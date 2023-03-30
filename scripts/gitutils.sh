@@ -14,7 +14,7 @@ cd_repo_root() {
   while [ ! -d .git/ ]; do
     old="$(pwd)"
     cd ..
-    [ "$(pwd)" == "$old" ] && echo "no repo root found" && return 1
+    [ "$(pwd)" == "$old" ] && echo "no repo root found" && return 1 || continue
   done
 }
 
