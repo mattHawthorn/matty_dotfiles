@@ -119,7 +119,7 @@ alias standup='hopinto scrum'
 
 alias shrug='echo "¯\_(ツ)_/¯"'
 alias fuckthis='echo "(╯°□°)╯︵ ┻━┻"'
-alias fuckthisisfine='echo "(┛❍ᴥ❍﻿)┛彡┻━┻"'
+alias fuckthisisfine='echo "(┛❍ᴥ❍)┛彡┻━┻"'
 
 alias shython='source $HOME/scripts/shython.sh'
 alias pr='poetry run'
@@ -136,6 +136,11 @@ start source_custom_scripts
 for module in clipboard datify todo mathutils papertitle fileutils gitutils; do
     source "$HOME/scripts/$module.sh"
 done
+
+mono() {
+  # monorepo CLI
+  run_from_repo_root poetry run mono "$@"
+}
 
 [ -f ~/.sdkman/bin/sdkman-init.sh ] && source ~/.sdkman/bin/sdkman-init.sh
 

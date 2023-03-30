@@ -8,6 +8,21 @@ alias pushthis='git push $(thisremote) $(thisbranch)'
 
 alias pullthis='git fetch; git merge $(thisremote)/$(thisbranch)'
 
+cd_repo_root() {
+  # mutates cwd; run in a subshell to prevent changing your shell cwd
+  local old
+  while [ ! -d .git/ ]; do
+    old="$(pwd)"
+    cd ..
+    [ "$(pwd)" == "$old" ] && echo "no repo root found" && return 1
+  done
+}
+
+run_from_repo_root() {
+  # run command in subshell from the repo root
+  ( cd_repo_root && "$@" )
+}
+
 update_gh_token() {
     local token="$1" remote="${2:-origin}" url new_url
     if [ -z "$token" ]; then
