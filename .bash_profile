@@ -133,7 +133,7 @@ finish shell_config
 start source_custom_scripts
 
 # custom scripts/utils
-for module in clipboard datify todo mathutils papertitle fileutils gitutils; do
+for module in clipboard datify todo mathutils papertitle fileutils gitutils anyq; do
     source "$HOME/scripts/$module.sh"
 done
 
