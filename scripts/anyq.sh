@@ -2,7 +2,6 @@ _anyq() {
   local flavor="$1"; shift
   local load=load
   [ $flavor == yaml ] && load=safe_load
-  echo "$@"
   python -c "import $flavor, sys, json; json.dump($flavor.$load(sys.stdin), sys.stdout)" | jq "$@"
 }
 
