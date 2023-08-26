@@ -22,7 +22,7 @@ start pyenv_init
 
 # pyenv
 if [ -d "$HOME/.pyenv/bin" ]; then
-  export PATH="~/.pyenv/bin:$PATH"
+  export PATH="$HOME/.pyenv/bin:$PATH"
   eval "$(pyenv init -)"
   eval "$(pyenv virtualenv-init -)"
 fi
@@ -149,8 +149,6 @@ start python_setup
 source "$HOME/scripts/pyutils.sh"
 set_python_dev_aliases
 set_conda_env_aliases ~/.conda_env_aliases
-# s3 cache util writes here
-export S3_CACHE_DIR=~/.s3_cache
 # tell pipenv to always create envs inside the project where the env is defined
 export PIPENV_VENV_IN_PROJECT=1
 
