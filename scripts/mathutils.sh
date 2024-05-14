@@ -7,7 +7,7 @@ tobase() {
     res=$(( num % base ))$res
     ((num /= base))
   done
-  echo "$sign$res"
+  echo "$sign${res:-0}"
 }
 
 binary() {
