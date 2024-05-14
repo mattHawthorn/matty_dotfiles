@@ -14,3 +14,10 @@ binary() {
   tobase $1 2
 }
 
+gini-impurity() {
+  awk '{sum += $1; sumsq += $1**2} END {print 1.0 - sumsq / sum**2}'
+}
+
+sum() {
+  awk '{sum += $1} END {print sum}'
+}
