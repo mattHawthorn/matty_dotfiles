@@ -154,6 +154,15 @@ export S3_CACHE_DIR=~/.s3_cache
 # tell pipenv to always create envs inside the project where the env is defined
 export PIPENV_VENV_IN_PROJECT=1
 
+start pyenv_setup
+# pyenv setup
+if which pyenv > /dev/null; then
+    export PYENV_ROOT="$HOME/.pyenv"
+    [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init -)"
+fi
+finish pyenv_setup
+
 finish python_setup
 
 
