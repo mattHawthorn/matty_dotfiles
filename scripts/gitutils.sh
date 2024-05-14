@@ -123,3 +123,8 @@ branch_diff() {
 	git log "$that_branch" "^$this_branch"
     fi
 }
+
+authors () {
+    git ls-tree --name-only -r HEAD "$@" | xargs -n1 git blame --line-porcelain \
+        | grep '^author ' | cut -f 2- -d ' ' | sort | uniq -c | sort -nr
+}
