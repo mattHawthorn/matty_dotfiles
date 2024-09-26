@@ -21,3 +21,9 @@ gini-impurity() {
 sum() {
   awk '{sum += $1} END {print sum}'
 }
+
+percent() {
+  local digits="${1-2}" text="$(cat -)"
+  local s="$(echo "$text" | sum)"
+  echo "$text" | awk '{printf "%.'$digits'f %s\n", 100*$1/'$s', $0}'
+}
