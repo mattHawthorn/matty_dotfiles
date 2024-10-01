@@ -49,6 +49,22 @@ update_gh_token() {
     fi
 }
 
+git_cp () {
+    # like `git mv` but it makes a copy. Preserves history in both copies.
+    local from="$1" to="$2" copy="${3-}" mv_commit;
+    [ -z "$copy" ] && copy="$from.copy";
+    git mv "$from" "$to";
+    git commit --no-verify -m "git mv $from $to";
+    mv_commit="$(git rev-parse HEAD)";
+    git reset --hard HEAD^;
+    git mv "$from" "$copy";
+    git commit --no-verify -m "git mv $from $copy (tmp)";
+    git merge "$mv_commit";
+    git commit --no-verify -a -m "merge mv commits, copying $from to $to and $copy";
+    git mv "$copy" "$from";
+    git commit --no-verify -m "git mv $copy $from (restored)"
+}
+
 branch_diff() {
     if [ $# -eq 0 ]; then
         echo "Print a summary of the difference between two git refs in terms of commits."
@@ -106,4 +122,9 @@ branch_diff() {
         read
 	git log "$that_branch" "^$this_branch"
     fi
+}
+
+authors () {
+    git ls-tree --name-only -r HEAD "$@" | xargs -n1 git blame --line-porcelain \
+        | grep '^author ' | cut -f 2- -d ' ' | sort | uniq -c | sort -nr
 }

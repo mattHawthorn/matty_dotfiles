@@ -7,10 +7,23 @@ tobase() {
     res=$(( num % base ))$res
     ((num /= base))
   done
-  echo "$sign$res"
+  echo "$sign${res:-0}"
 }
 
 binary() {
   tobase $1 2
 }
 
+gini-impurity() {
+  awk '{sum += $1; sumsq += $1**2} END {print 1.0 - sumsq / sum**2}'
+}
+
+sum() {
+  awk '{sum += $1} END {print sum}'
+}
+
+percent() {
+  local digits="${1-2}" text="$(cat -)"
+  local s="$(echo "$text" | sum)"
+  echo "$text" | awk '{printf "%.'$digits'f %s\n", 100*$1/'$s', $0}'
+}
