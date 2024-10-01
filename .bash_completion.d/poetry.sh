@@ -63,6 +63,9 @@ install
 build
 check
 config
+  - 1(1) _bourbaki_complete_from_stdout _poetry_config_keys
+  - 1(?) _bourbaki_complete_from_stdout _poetry_config_values
+  --list 0(?)
 export
 help
 init
@@ -101,6 +104,14 @@ source
   remove
   show
 """
+}
+
+_poetry_config_keys() {
+  poetry config --list | cut -f 1 -d ' '
+}
+
+_poetry_config_values() {
+  poetry config --list | cut -f 3 -d ' '
 }
 
 complete -o bashdefault -F _complete_poetry poetry
