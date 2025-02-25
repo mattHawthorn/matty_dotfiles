@@ -44,26 +44,10 @@ filetype() {
     return 0
 }
 
-
 # override mac-provided command line tools with newer GNU versions
-GNU_PREFIX=$BREW_PREFIX/opt
-GNUPATH=$GNU_PREFIX/coreutils/libexec/gnubin/
-GNUMANPATH=$GNU_PREFIX/coreutils/libexec/gnuman/
-MAKEPATH=$GNU_PREFIX/make/libexec/gnubin/
-MAKEMANPATH=$GNU_PREFIX/make/libexec/gnuman/
-FINDPATH=$GNU_PREFIX/findutils/libexec/gnubin/
-FINDMANPATH=$GNU_PREFIX/findutils/libexec/gnuman/
-GCCPATH=$GNU_PREFIX/gcc/bin/
-GCCMANPATH=$GNU_PREFIX/gcc/share/man/
-SEDPATH=$GNU_PREFIX/gnu-sed/libexec/gnubin/
-SEDMANPATH=$GNU_PREFIX/gnu-sed/libexec/gnuman/
-
-for _P in "$SEDPATH" "$GCCPATH" "$MAKEPATH" "$FINDPATH" "$GNUPATH"; do
-    [ -e "$_P" ] && export PATH="$_P:$PATH"
+for _suffix in opt coreutils make findutils gcc gnu-sed; do
+    [ -d "$GNU_PREFIX/$_suffix/bin" ] && export PATH="$GNU_PREFIX/$_suffix/bin/:$PATH" && echo $__suffix
+    [ -d "$GNU_PREFIX/$_suffix/gnubin" ] && export PATH="$GNU_PREFIX/$_suffix/gnubin/:$PATH" && echo $__suffix
+    [ -d "$GNU_PREFIX/$_suffix/gnuman" ] && export MANPATH="$GNU_PREFIX/$_suffix/bin/:$MANPATH"
 done
-
-for _P in "$SEDMANPATH" "$GCCMANPATH" "$MAKEMANPATH" "$FINDMANPATH" "$GNUMANPATH"; do
-    [ -e "$_P" ] && export MANPATH="$_P:$MANPATH"
-done
-
-unset _P
+unset _suffix

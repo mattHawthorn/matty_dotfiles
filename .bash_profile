@@ -2,6 +2,9 @@
 [ -z "$PS1" ] && return
 
 # do this first to make GNU utils available in this script on Mac OS X
+if ! which brew; then
+  export PATH="/opt/homebrew/bin/:$PATH"
+fi
 which brew > /dev/null && source "$HOME/scripts/homebrew_setup.sh"
 
 # put haskell stack builds on the path
@@ -206,8 +209,10 @@ finish conda_init
 # added by travis gem
 [ -f /home/matt/.travis/travis.sh ] && source /home/matt/.travis/travis.sh
 
-start mise_setup
-eval "$($HOME/.local/bin/mise activate bash)"
-finish mise_setup
+if which mise; then
+    start mise_setup
+    eval "$($HOME/.local/bin/mise activate bash)"
+    finish mise_setup
+fi
 
 finish bash_profile

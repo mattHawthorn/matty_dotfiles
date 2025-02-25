@@ -43,17 +43,19 @@ background() {
     echo $!
 }
 
+which gdate && export __datecmd="gdate" || export __datecmd="date"
+
 # run time reporting utils
 ns_() {
-    date +%s%N
+    $__datecmd +%s%N
 }
 
 us_() {
-    echo $(($(date +%s%N)/1000))
+    echo $(($($__datecmd +%s%N)/1000))
 }
 
 ms_() {
-    echo $(($(date +%s%N)/1000000))
+    echo $(($($__datecmd +%s%N)/1000000))
 }
 
 RUNTIME_VAR_PREFIX=t__

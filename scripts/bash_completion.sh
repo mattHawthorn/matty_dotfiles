@@ -13,7 +13,7 @@ install_bash_completions() {
                 [[ -r "$BREW_PREFIX/etc/bash_completion" ]] && . "$BREW_PREFIX/etc/bash_completion"
                 [[ -r "$BREW_PREFIX/etc/profile.d/bash_completion.sh" ]] && . "$BREW_PREFIX/etc/profile.d/bash_completion.sh"
                 if [[ -d "$BREW_PREFIX/etc/bash_completion.d/" ]]; then
-                    for _suffix in bash-builtins sh tar rsync gzip gpg gpg2 python openssl sqlite3; do
+                    for _suffix in bash-builtins sh git git-completion.bash tar rsync gzip gpg gpg2 python openssl sqlite3; do
                         if [[ -r "$BREW_PREFIX/etc/bash_completion.d/$_suffix" ]]; then
                             echo "        ... $_suffix completions"
                             . "$BREW_PREFIX/etc/bash_completion.d/$_suffix"
