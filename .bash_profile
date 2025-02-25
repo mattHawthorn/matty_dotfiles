@@ -59,7 +59,7 @@ else
 fi
 
 # bash-git-prompt
-[ -d ~/.bash-git-prompt ] && GIT_PROMPT_ONLY_IN_REPO=1 && source ~/.bash-git-prompt/gitprompt.sh
+[ -d ~/.bash-git-prompt ] && export GIT_PROMPT_ONLY_IN_REPO=1 && source ~/.bash-git-prompt/gitprompt.sh
 
 # extra path munging for specific machines, if needed
 [ -f ~/.bash_add_path ] && source ~/.bash_add_path
@@ -74,17 +74,14 @@ alias la='ls -alF'
 alias whattime='date +%T'
 
 # development sandbox
-if [ -d ~/Desktop/sandbox ]; then
-    SANDBOX=~/Desktop/sandbox/
-    alias sandbox='cd "$SANDBOX"'
-fi
-
-# google calendar CLI
-if which gcalcli > /dev/null; then
-    alias today='gcalcli agenda --nodeclined --no-military --details url --details length --details email "$(date +"%a %H:00:00")" "$(date +"%a 11:59:59 PM")"'
-    alias thisweek='gcalcli calw --no-military'
-    alias thismonth='gcalcli calm --no-military'
-fi
+for _dir in  ~/sandbox ~/Desktop/sandbox; do
+    if [ -d "$_dir" ]; then
+        export SANDBOX="$_dir"
+        alias sandbox='cd "$SANDBOX"'
+        break
+    fi
+done
+unset _dir
 
 # browser
 case "$OSTYPE" in
@@ -93,29 +90,6 @@ case "$OSTYPE" in
     darwin*)
         export BROWSER='open -a firefox -g' ;;
 esac
-
-# goto meetings
-hopinto() {
-    local meetinglink
-    if [ $# -eq 0 ]; then
-        echo "searching for upcoming meetings"
-        meetinglink=$(today | grep 'Hangout Link:' | head -1 | while read line; do echo ${line#*Hangout Link:}; done)
-    else
-        echo "searching for upcoming $1 meetings"
-        meetinglink=$(today | grep -i -A 4 $1 | grep 'Hangout Link:' | head -1 | while read line; do echo ${line#*Hangout Link:}; done)
-    fi
-    if [ -z "$meetinglink" ]; then
-        echo "No meeting link found! run 'today' to see upcoming events"
-        return 1
-    else
-        echo "Entering $1 meeting at ${meetinglink}"
-        $BROWSER "$meetinglink"
-    fi
-}
-alias meeting='hopinto'
-alias grooming='hopinto grooming'
-alias scrum='hopinto scrum'
-alias standup='hopinto scrum'
 
 alias shrug='echo "¯\_(ツ)_/¯"'
 alias fuckthis='echo "(╯°□°)╯︵ ┻━┻"'
@@ -147,8 +121,6 @@ mono() {
 start python_setup
 
 source "$HOME/scripts/pyutils.sh"
-set_python_dev_aliases
-set_conda_env_aliases ~/.conda_env_aliases
 # tell pipenv to always create envs inside the project where the env is defined
 export PIPENV_VENV_IN_PROJECT=1
 
@@ -170,23 +142,20 @@ source "$HOME/scripts/dockerutils.sh"
 start completions
 
 # completions
-# >> source "$HOME/scripts/bash_completion.sh"
-# >> install_bash_completions
-# Actually, this is the recommended way by the authors of bash_completion:
-[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
+source "$HOME/scripts/bash_completion.sh"
 
 # stack completions
-which stack >/dev/null && eval "$(stack --bash-completion-script stack)"
+which stack > /dev/null && eval "$(stack --bash-completion-script stack)"
 
-install_bash_completions() {
+install_custom_bash_completions() {
     if [ -d ~/.bash_completion.d/ ]; then
-        for completion_script in $(ls ~/.bash_completion.d/); do
-            source ~/.bash_completion.d/$completion_script
+        for completion_script in ~/.bash_completion.d/*; do
+            [[ -r "$completion_script" ]] && . "$completion_script"
         done
     fi
 }
 
-install_bash_completions
+install_custom_bash_completions
 
 finish completions
 
@@ -219,7 +188,7 @@ start conda_init
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('$HOME/anaconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+__conda_setup="$("$HOME/anaconda3/bin/conda" 'shell.bash' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
@@ -236,5 +205,9 @@ finish conda_init
 
 # added by travis gem
 [ -f /home/matt/.travis/travis.sh ] && source /home/matt/.travis/travis.sh
+
+start mise_setup
+eval "$($HOME/.local/bin/mise activate bash)"
+finish mise_setup
 
 finish bash_profile

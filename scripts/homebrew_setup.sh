@@ -1,14 +1,9 @@
 # expose and configure homebrew-installed software
 
-BREW_PREFIX="$(brew --prefix)"
-
-# git prompt
-if [ -f "$BREW_PREFIX/opt/bash-git-prompt/share/gitprompt.sh" ]; then
-  __GIT_PROMPT_DIR=$(brew --prefix)/opt/bash-git-prompt/share
-  source "$(brew --prefix)/opt/bash-git-prompt/share/gitprompt.sh"
+if ! which brew; then
+  export PATH="/opt/homebrew/bin/:$PATH"
 fi
-export GIT_PROMPT_ONLY_IN_REPO=1
-
+BREW_PREFIX="$(brew --prefix)"
 
 whereisit() {
     # like whereis, but this will find brew-intstalled executables.
@@ -50,9 +45,6 @@ filetype() {
 }
 
 
-# sqlite
-export PATH="$PATH:/usr/local/opt/sqlite/bin"
-
 # override mac-provided command line tools with newer GNU versions
 GNU_PREFIX=$BREW_PREFIX/opt
 GNUPATH=$GNU_PREFIX/coreutils/libexec/gnubin/
@@ -66,5 +58,12 @@ GCCMANPATH=$GNU_PREFIX/gcc/share/man/
 SEDPATH=$GNU_PREFIX/gnu-sed/libexec/gnubin/
 SEDMANPATH=$GNU_PREFIX/gnu-sed/libexec/gnuman/
 
-export PATH="$GNUPATH:$FINDPATH:$MAKEPATH:$GCCPATH:$SEDPATH:$PATH"
-export MANPATH="$GNUMANPATH:$FINDMANPATH:$MAKEMANPATH:$GCCMANPATH:$SEDMANPATH:$MANPATH:$PATH"
+for _P in "$SEDPATH" "$GCCPATH" "$MAKEPATH" "$FINDPATH" "$GNUPATH"; do
+    [ -e "$_P" ] && export PATH="$_P:$PATH"
+done
+
+for _P in "$SEDMANPATH" "$GCCMANPATH" "$MAKEMANPATH" "$FINDMANPATH" "$GNUMANPATH"; do
+    [ -e "$_P" ] && export MANPATH="$_P:$MANPATH"
+done
+
+unset _P

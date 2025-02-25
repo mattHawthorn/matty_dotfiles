@@ -73,7 +73,7 @@ _time_report() {
     local mode=$1; shift
     local units=ms denom=1000 dec=3 label=RUNNING t
     
-    [ $mode == f ] && label=FINISHED
+    [ "$mode" == f ] && label=FINISHED
     case "$1" in
         -M) units=min; denom=600000000; dec=2; shift ;;
         -s) units=s; denom=1000000; dec=3; shift ;;

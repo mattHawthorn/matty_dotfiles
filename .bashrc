@@ -135,15 +135,6 @@ fi
 
 #export PATH="$PATH:/opt/Adobe/Reader9/bin"
 
-# texlive install
-export PATH="$PATH:/usr/local/texlive/2017/bin/x86_64-linux"
-export PATH="$PATH:/usr/local/texlive/2015/bin/x86_64-linux"
-export MANPATH="$MANPATH:/usr/local/texlive/2017/texmf-dist/doc/man"
-export INFOPATH="$INFOPATH:/usr/local/texlive/2017/texmf-dist/doc/info"
-
-# spark location
-SPARK_HOME="/opt/spark-1.6.1-bin-hadoop2.6/"
-
 # gitprompt setup
 GIT_PROMPT_ONLY_IN_REPO=1
 source ~/.bash-git-prompt/gitprompt.sh

@@ -162,55 +162,6 @@ trypy() {
     fi | python -
 }
 
-# conda-related aliases
-set_conda_env_aliases() {
-    if [ -z "$1" ]; then
-        local tmpfile=/tmp/conda_env_aliases
-        local remove=true
-    else
-        local tmpfile="$1"
-        [ -f "$tmpfile" ] && source "$tmpfile" && return
-        local remove=false
-    fi
-    local env version
-    conda env list | tail -n +3 |
-        while read line; do
-            env=$(echo "$line" | cut -f 1 -d ' ')
-            [ ! -z "$env" ] && echo "alias pyenv_$env='source activate $env'" >> $tmpfile
-        done
-    [ -f "$tmpfile" ] && source "$tmpfile"
-    $remove && rm $tmpfile
-    alias sa='source activate'
-    alias sda='source deactivate'
-    alias notebook='jupyter notebook'
-    export CONDA_ENV_ALIASES_SET=1
-}
-
-set_python_dev_aliases() {
-    alias pspi="python setup.py install"
-    alias pspd="python setup.py develop"
-    alias pspb="python setup.py build"
-    alias pspt="python setup.py test"
-    
-    SANDBOX="$HOME/Desktop/sandbox"
-    alias sandbox="cd $SANDBOX"
-
-    case "$OSTYPE" in
-        linux*) 
-            PYCHARM_DIR="$(find /opt -maxdepth 1 -type d -name 'pycharm*' | sort -V | tail -n 1)"
-            alias pycharm="$PYCHARM_DIR/bin/pycharm.sh"
-            charm() {
-                $PYCHARM_DIR/bin/pycharm.sh $@ &
-            }
-            ;;
-        darwin*) 
-            PYCHARM_DIR='/Applications/PyCharm\ CE.app'
-            alias pycharm='$PYCHARM_DIR/Contents/MacOS/pycharm &'
-            ;;
-    esac
-}
-
-
 killjupyter() {
     local ports=($@) killed=() nk=()
     local pid port dir_ p i n STATUS=0 USAGE="Usage: $FUNCNAME [-a] [PORT [PORT ...]]"
@@ -318,8 +269,7 @@ scratchpad() {
         esac
     fi
 
-
-    if [[ ! -z "$ENV" ]]; then
+    if [[ -n "$ENV" ]]; then
         msg="anaconda environment $ENV"
         begincmd="source activate $ENV"
         endcmd="source deactivate"
@@ -338,6 +288,14 @@ scratchpad() {
         JUPYTER_PID=$!
         echo "Jupyter server PID is JUPYTER_PID=$JUPYTER_PID"
         echo "Notebook server is logging to JUPYTER_LOG=$JUPYTER_LOG"
+        JUPYTER_URL=""
+        while [ -z "$JUPYTER_URL" ]; do
+          JUPYTER_URL="$(jupyter notebook list --json | jq -r "select(.pid == $JUPYTER_PID).url")"
+        done
+        case "$OSTYPE" in
+          darwin*) open "$JUPYTER_URL";;
+          *) echo "Open $JUPYTER_URL in a browser"
+        esac
         cd "$CWD"
         $endcmd
     else
@@ -374,107 +332,3 @@ _scratchpad() {
     # COMPREPLY=(${COMPREPLY[@]} $COMP_CWORD  "'" ${COMP_WORDS[-1]} "'")
 }
 complete -o filenames -o nospace -F _scratchpad scratchpad
-
-
-pushd_() {
-    pushd "$1" > /dev/null
-}
-
-popd_() {
-    popd > /dev/null
-}
-
-namespaceify() {
-    local name dir_ pkg_dir tmp mods=() 
-    local mv_setup_py='touch setup.py' mv_setup_cfg='' mv_setup_py_msg='' mv_setup_cfg_msg='' testdir=''
-    local ns_init="__import__('pkg_resources').declare_namespace(__name__)"
-    local SAFE=1
-    
-    while [ "$1" != "${1#-}" ]; do
-        case "$1" in
-            -x) local SAFE=0; shift
-                ;;
-            -t) local testdir="$2"; shift 2
-                ;;
-        esac
-    done
-
-    if [ -z "$1" ]; then 
-        dir_="$(pwd)"
-    else
-        dir_="$1"
-    fi
-   
-    name="$(basename $dir_)"
-
-    pushd_ "$dir_"
-
-    pushd_ ..
-    if [ -f "setup.py" ]; then
-        mv_setup_py="cp $(pwd)/setup.py ./"
-        mv_setup_py_msg=" from $(pwd)/setup.py"
-    fi
-    if [ -f "setup.cfg" ]; then
-        mv_setup_cfg="cp $(pwd)/setup.cfg ./"
-        mv_setup_cfg_msg=" from $(pwd)/setup.cfg"
-    fi
-    popd_
-
-    tmp="$(mktemp -d)"
-
-    for subdir in $(ls); do
-        [ ! -d "$subdir" ] || [ "$subdir" = "__pycache__" ] && continue
-        if [ ! -f "$subdir/__init__.py" ]; then
-            echo "$subdir appears not to be a python module (no __init__.py); skipping."
-            continue
-        fi
-        
-        echo creating subpackage "$subdir"
-        
-        safely mv "$subdir" "$tmp/" &&
-            safely mkdir "$subdir" &&
-            safely pushd_ "$subdir" &&
-            safely mkdir "$name" && 
-            safely pushd_ "$name" && 
-            safely mv "$tmp/$subdir" ./ &&
-            echo "creating default __init__.py" &&
-            safely eval echo '"'"$ns_init"'"' ">__init__.py" &&
-            safely popd_ && 
-            echo "creating setup.py$mv_setup_py_msg" &&
-            safely $mv_setup_py &&
-            ( [ ! -z "$mv_setup_cfg" ] && echo "creating setup.cfg$mv_setup_cfg_msg" && safely $mv_setup_cfg || true ) &&
-            echo "generating requirements.txt from parsed imports" &&
-            safely eval pydeps -n "$name" "$name" ">requirements.txt" &&
-            ( [ ! -z "$testdir" ] && echo "creating directory for test suite in $testdir/" && mkdir "$testdir" || true ) &&
-            safely popd_
-        
-        if [ $? -ne 0 ]; then
-            echo Error: failed to create subpackage "$subdir"
-        else        
-            mods=("${mods[@]}" "$subdir")
-        fi
-        echo
-    done
-    
-    popd_
-
-    rm -rf "$tmp"
-    
-    if [ ${#mods[@]} -gt 0 ]; then
-        echo
-        echo "Namespaced the following submodules in $name:"
-        for m in ${mods[@]}; do echo $m; done; echo
-        echo "You may need to check that setup.py and requirements.txt are correct in each submodule."
-        [ ! -z "$testdir" ] && echo "You may also need to migrate your test suites to $testdir/ in each submodule."
-        echo "The dummy requirements.txt files written therein contain module names as in found in import statements;"
-        echo "These in general may not match distribution names as found in PyPI and installed by pip."
-        if [ -f "$dir_/__init__.py" ]; then
-            echo "__init__.py still exists in $dir_; if there is any setup logic there it will need to be transferred to the submodules"
-        fi
-        echo "Be sure to put 'namspace_packages=['$name'], zip_safe=False' in the setuptools.setup() call of each submodule's __init__.py"
-    else
-        echo
-        echo "No modules were namespaced in $name!"
-    fi
-    echo
-}
