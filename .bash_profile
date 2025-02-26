@@ -101,6 +101,8 @@ alias fuckthisisfine='echo "(┛❍ᴥ❍)┛彡┻━┻"'
 alias shython='source $HOME/scripts/shython.sh'
 alias pr='poetry run'
 alias ur='uv run'
+complete -o bashdefault -F _root_command pr
+complete -o bashdefault -F _root_command ur
 
 finish aliases
 
