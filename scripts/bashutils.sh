@@ -43,7 +43,7 @@ background() {
     echo $!
 }
 
-which gdate && export __datecmd="gdate" || export __datecmd="date"
+which gdate > /dev/null && export __datecmd="gdate" || export __datecmd="date"
 
 # run time reporting utils
 ns_() {
@@ -62,13 +62,13 @@ RUNTIME_VAR_PREFIX=t__
 
 start() {
     eval "$RUNTIME_VAR_PREFIX$1=\$(ns_)"
-    echo "$(_time_report_indent)  STARTED $1"
+    echo "$(_time_report_indent)STARTED $1"
 }
 
 _time_report_indent() {
     local jobs=($(compgen -v $RUNTIME_VAR_PREFIX))
     local njobs=${#jobs[@]}
-    printf '% '$((2 * $njobs))s ''
+    printf '% '"$((2 * ($njobs - 1)))s" ''
 }
 
 _time_report() {
@@ -86,7 +86,7 @@ _time_report() {
     eval "t=\$(((\$(ns_)-\$$RUNTIME_VAR_PREFIX$1)/$denom))"
     [ ${#t} -le $dec ] && t=$(printf "%0$((dec+1))"d)
     [ $dec -gt 0 ] && t="${t::-$dec}.${t:$((${#t}-$dec)):$dec}"
-    echo "$(_time_report_indent)  $label $1: runtime $t$units"
+    echo "$(_time_report_indent)$label $1: runtime $t$units"
     [ $mode == f ] && eval "unset $RUNTIME_VAR_PREFIX$1"
 }
 

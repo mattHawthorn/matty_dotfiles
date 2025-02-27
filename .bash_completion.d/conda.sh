@@ -178,11 +178,9 @@ uninstall
 """
 }
 
-
-[ -z "$_CONDA_PREFIX" ] && _CONDA_PREFIX=$(conda info --base)
-
 _list_conda_envs() {
-  ls $_CONDA_PREFIX/envs
+  [ -z "$_CONDA_PREFIX" ] && _CONDA_PREFIX=$(conda info --base)
+  ls "$_CONDA_PREFIX/envs"
 }
 
 complete -o bashdefault -F _complete_conda conda

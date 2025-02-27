@@ -1,6 +1,6 @@
 # expose and configure homebrew-installed software
 
-if ! which brew; then
+if ! which brew > /dev/null; then
   export PATH="/opt/homebrew/bin/:$PATH"
 fi
 BREW_PREFIX="$(brew --prefix)"
@@ -44,10 +44,21 @@ filetype() {
     return 0
 }
 
+GNU_PREFIX="$BREW_PREFIX/opt"
 # override mac-provided command line tools with newer GNU versions
-for _suffix in opt coreutils make findutils gcc gnu-sed; do
-    [ -d "$GNU_PREFIX/$_suffix/bin" ] && export PATH="$GNU_PREFIX/$_suffix/bin/:$PATH" && echo $__suffix
-    [ -d "$GNU_PREFIX/$_suffix/gnubin" ] && export PATH="$GNU_PREFIX/$_suffix/gnubin/:$PATH" && echo $__suffix
+for _suffix in coreutils grep diffutils findutils gnu-sed gnu-tar gzip gcc make sqlite3 wget; do
+    [ -d "$GNU_PREFIX/$_suffix/bin" ] && export PATH="$GNU_PREFIX/$_suffix/bin/:$PATH"
+    [ -d "$GNU_PREFIX/$_suffix/gnubin" ] && export PATH="$GNU_PREFIX/$_suffix/gnubin/:$PATH"
     [ -d "$GNU_PREFIX/$_suffix/gnuman" ] && export MANPATH="$GNU_PREFIX/$_suffix/bin/:$MANPATH"
 done
 unset _suffix
+
+set_gnu_aliases() {
+  local _cmd indent="$1"
+  for _cmd in date cut sort head tail uniq seq grep diff find sed tar; do
+      if which "g$_cmd" > /dev/null; then
+          which $_cmd > /dev/null && echo "${indent}warning: aliasing g$_cmd to $_cmd ($(which $_cmd))"
+          alias "$_cmd"="g$_cmd"
+      fi
+  done
+}

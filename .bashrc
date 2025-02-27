@@ -95,18 +95,9 @@ alias lld='ll -d'
 alias la='ls -A'
 alias l='ls -CF'
 
-# git command aliases
-alias gitco="git checkout"
-alias gitcm="git commit"
-alias gitci="git check-ignore"
-alias gitst="git status"
-alias gitfh="git fetch"
-
-
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
-
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
@@ -124,21 +115,6 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
-
-# added by Anaconda3 4.4.0 installer
-# export PATH="$HOME/anaconda3/bin:$PATH"  # commented out by conda initialize
-
-# for haskell
-#export PATH="$PATH:/home/matt/.local/bin"
-#alias ghci="stack ghci"
-#alias ghc="stack ghc"
-
-#export PATH="$PATH:/opt/Adobe/Reader9/bin"
-
-# gitprompt setup
-GIT_PROMPT_ONLY_IN_REPO=1
-source ~/.bash-git-prompt/gitprompt.sh
-
 # bash_profile if interactive terminal- This seems necessary for basic terminal
 # sessions on Ubuntu
 case "$OSTYPE" in
@@ -147,20 +123,3 @@ case "$OSTYPE" in
         source ~/.bash_profile
         ;;
 esac
-
-
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/home/matt/anaconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/home/matt/anaconda3/etc/profile.d/conda.sh" ]; then
-        . "/home/matt/anaconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/home/matt/anaconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-
