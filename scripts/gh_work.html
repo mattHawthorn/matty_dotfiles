@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work log</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --paper: #141821;
+    --band: #1b2130;
+    --cell: #232a3a;
+    --rule: #333c4d;
+    --ink: #e4e8ef;
+    --muted: #96a1b8;
+    --blue: #7fb0ee;      --blue-soft: #1f3552;
+    --amber: #e2a94a;     --amber-soft: #3d2f16;
+    --teal: #5fc3c8;      --teal-soft: #17393c;
+    --green: #6cc493;     --green-soft: #1b3a2a;
+    --grey: #7d889c;      --grey-soft: #1e2431;
+    --purple: #b596e8;    --purple-soft: #2e2542;
+    --red: #e08a8a;       --red-soft: #3d2222;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 15px/1.5 var(--sans);
+    padding-block: 40px 96px;
+    padding-inline: 24px;
+  }
+  main { max-width: 960px; margin: 0 auto; display: grid; gap: 22px; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .mono { font-family: var(--mono); }
+
+  /* header */
+  header { display: grid; gap: 10px; margin-bottom: 10px; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-family: var(--serif); font-weight: 600; font-size: 34px; line-height: 1.1; margin: 0; letter-spacing: -0.01em; }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px 28px; font-family: var(--mono); font-size: 13px; color: var(--muted); }
+  .stats b { color: var(--ink); font-weight: 500; }
+  .empty { color: var(--muted); font-size: 16px; padding: 40px 0; }
+
+  /* PR card */
+  .pr { background: var(--band); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+  .pr-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; padding: 16px 20px 14px; border-bottom: 1px solid var(--rule); }
+  .pr-num { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+  .pr-title { font-family: var(--serif); font-size: 20px; font-weight: 600; line-height: 1.25; color: var(--ink); flex: 1 1 320px; }
+  .pr-title:hover { color: var(--blue); text-decoration: none; }
+  .pr-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; width: 100%; font-size: 12.5px; color: var(--muted); }
+  .pr-meta .mono { font-size: 12px; }
+  .pill {
+    display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px; border: 1px solid; line-height: 1.5; white-space: nowrap;
+  }
+  .pill-open { color: var(--green); border-color: var(--green); background: var(--green-soft); }
+  .pill-merged { color: var(--purple); border-color: var(--purple); background: var(--purple-soft); }
+  .pill-closed { color: var(--red); border-color: var(--red); background: var(--red-soft); }
+  .pill-draft { color: var(--grey); border-color: var(--grey); background: transparent; border-style: dashed; }
+
+  /* event list */
+  .events { display: grid; gap: 10px; padding: 12px 14px 14px; }
+  .day-group { background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; }
+  .day { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+         padding: 9px 14px 3px; }
+  .event { display: grid; grid-template-columns: 52px 1fr; gap: 4px 14px; padding: 10px 14px 12px; border-top: 1px solid var(--rule); }
+  .day + .event { border-top: none; }
+  .time { font-family: var(--mono); font-size: 12.5px; color: var(--muted); padding-top: 3px; white-space: nowrap; }
+  .time a { color: inherit; }
+  .event-main { min-width: 0; display: grid; gap: 8px; }
+  .kind-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .chip { display: inline-block; font-family: var(--mono); font-size: 11.5px; padding: 1px 8px; border-radius: 4px; border: 1px solid; line-height: 1.6; white-space: nowrap; }
+  .chip-comment { color: var(--blue); border-color: var(--blue-soft); background: var(--blue-soft); }
+  .chip-approved { color: var(--green); border-color: var(--green-soft); background: var(--green-soft); }
+  .chip-changes { color: var(--amber); border-color: var(--amber-soft); background: var(--amber-soft); }
+  .chip-commented { color: var(--muted); border-color: var(--grey-soft); background: var(--grey-soft); }
+  .chip-dismissed { color: var(--red); border-color: var(--red-soft); background: var(--red-soft); }
+  .chip-pending { color: var(--muted); border-color: var(--rule); background: transparent; border-style: dashed; }
+  .chip-commit { color: var(--teal); border-color: var(--teal-soft); background: var(--teal-soft); }
+  .chip-commit:hover { text-decoration: none; border-color: var(--teal); }
+  .headline { font-weight: 500; }
+  .coauthors { font-size: 12.5px; color: var(--muted); }
+
+  /* bodies */
+  .body { position: relative; }
+  .body.clamped .content { max-height: 320px; overflow: hidden; }
+  .body.clamped::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 30px; height: 70px; pointer-events: none;
+    background: linear-gradient(to bottom, transparent, var(--paper));
+  }
+  .body.clamped .expand { display: inline-block; }
+  .expand { display: none; margin-top: 6px; font: 12px var(--mono); color: var(--blue); background: none; border: 1px solid var(--rule); border-radius: 4px; padding: 3px 10px; cursor: pointer; }
+  .expand:hover { border-color: var(--blue); }
+  .more { justify-self: start; margin: 0; }
+  .plain { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 14px/1.5 var(--sans); }
+  .md { overflow-wrap: anywhere; }
+  .md > :first-child { margin-top: 0; }
+  .md > :last-child { margin-bottom: 0; }
+  .md p, .md ul, .md ol, .md blockquote, .md pre, .md table { margin: 0 0 10px; }
+  .md h1, .md h2, .md h3, .md h4 { font-family: var(--sans); font-size: 15px; font-weight: 600; margin: 14px 0 6px; color: var(--ink); }
+  .md h1 { font-size: 17px; }
+  .md ul, .md ol { padding-left: 22px; }
+  .md li { margin-bottom: 3px; }
+  .md blockquote { border-left: 3px solid var(--rule); padding: 2px 0 2px 12px; color: var(--muted); }
+  .md code { font-family: var(--mono); font-size: .9em; background: var(--cell); padding: 1px 5px; border-radius: 3px; }
+  .md pre { background: var(--cell); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; overflow-x: auto; }
+  .md pre code { background: none; padding: 0; font-size: 12.5px; }
+  .md table { border-collapse: collapse; font-size: 13.5px; display: block; overflow-x: auto; }
+  .md th, .md td { border: 1px solid var(--rule); padding: 4px 8px; text-align: left; }
+  .md th { color: var(--muted); font-weight: 500; }
+  .md img { max-width: 100%; }
+  .md hr { border: 0; border-top: 1px solid var(--rule); }
+  .md input[type=checkbox] { margin-right: 6px; }
+
+  @media (max-width: 640px) {
+    body { padding-inline: 16px; }
+    h1 { font-size: 28px; }
+    .event { grid-template-columns: 1fr; }
+    .time { padding-top: 0; }
+  }
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/18.0.12/lib/marked.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.4.15/purify.min.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  const data = window.GH_WORK || { generated: null, prs: [] };
+  const CLAMP_PX = 320;
+  const MAX_VISIBLE_COMMITS = 8;
+
+  // ---- small DOM helper -------------------------------------------------------------------
+  function el(tag, attrs, ...children) {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v === null || v === undefined || v === false) continue;
+      if (k === "class") node.className = v;
+      else if (k === "text") node.textContent = v;
+      else if (k.startsWith("on")) node.addEventListener(k.slice(2), v);
+      else node.setAttribute(k, v);
+    }
+    for (const child of children.flat()) {
+      if (child === null || child === undefined || child === false) continue;
+      node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+    }
+    return node;
+  }
+
+  // ---- formatting -------------------------------------------------------------------------
+  const timeFmt = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", hour12: false });
+  const dayFmt = new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" });
+  const dateFmt = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" });
+  const fullFmt = new Intl.DateTimeFormat(undefined, { dateStyle: "full", timeStyle: "long" });
+  const fmtTime = (iso) => timeFmt.format(new Date(iso));
+  const fmtDay = (iso) => dayFmt.format(new Date(iso));
+  const fmtDate = (iso) => dateFmt.format(new Date(iso));
+  const fmtFull = (iso) => `${fullFmt.format(new Date(iso))}\n${iso}`;
+  const localDay = (iso) => { const d = new Date(iso); return [d.getFullYear(), d.getMonth(), d.getDate()].join("-"); };
+
+  const repoUrl = (pr) => pr.url.replace(/\/pull\/\d+$/, "");
+  const repoName = (pr) => repoUrl(pr).replace(/^https?:\/\/[^/]+\//, "");
+  const shortOid = (oid) => oid.slice(0, 8);
+  const authorLabel = (a) => a.login ? `${a.name} (${a.login})` : a.name;
+
+  // GitHub truncates long headlines with "…" and moves the remainder to the start of the body
+  function commitMessage(c) {
+    const joined = c.messageHeadline.endsWith("…") && c.messageBody.startsWith("…")
+      ? c.messageHeadline.slice(0, -1) + c.messageBody.slice(1)
+      : c.messageHeadline + "\n\n" + c.messageBody;
+    const lines = joined.replace(/\r/g, "").split("\n").filter((l) => !/^co-authored-by:/i.test(l));
+    return { headline: lines[0], body: lines.slice(1).join("\n").trim() };
+  }
+
+  // ---- data shaping -----------------------------------------------------------------------
+  function events(pr) {
+    const repo = repoUrl(pr);
+    return [
+      ...(pr.comments || []).map((c) => ({ t: c.createdAt, kind: "comment", body: c.body, url: c.url })),
+      ...(pr.reviews || []).map((r) => ({ t: r.submittedAt, kind: "review", state: r.state, body: r.body, url: pr.url })),
+      ...(pr.commits || []).map((c) => ({
+        t: c.committedDate, kind: "commit", oid: c.oid, authors: c.authors, url: `${repo}/commit/${c.oid}`, ...commitMessage(c),
+      })),
+    ].sort((a, b) => a.t.localeCompare(b.t));
+  }
+
+  function inferOwner(prs) {
+    const counts = new Map();
+    const bump = (login) => { if (login) counts.set(login, (counts.get(login) || 0) + 1); };
+    for (const pr of prs) {
+      for (const c of pr.comments || []) bump(c.author && c.author.login);
+      for (const r of pr.reviews || []) bump(r.author && r.author.login);
+      for (const c of pr.commits || []) for (const a of c.authors || []) bump(a.login);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([login]) => login)[0] || null;
+  }
+
+  // ---- markdown ---------------------------------------------------------------------------
+  const canRenderMarkdown = typeof window.marked !== "undefined" && typeof window.DOMPurify !== "undefined";
+
+  // GFM does not autolink #123 or @login; do it on text nodes outside code and existing links
+  function autolink(root, repo) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => n.parentElement.closest("a, code, pre") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+    });
+    const nodes = [];
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) nodes.push(n);
+    const pattern = /(^|[\s(])(#(\d+)|@([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?))/g;
+    for (const node of nodes) {
+      const text = node.nodeValue;
+      if (!pattern.test(text)) continue;
+      pattern.lastIndex = 0;
+      const frag = document.createDocumentFragment();
+      let last = 0, m;
+      while ((m = pattern.exec(text))) {
+        frag.append(text.slice(last, m.index + m[1].length));
+        const href = m[3] ? `${repo}/issues/${m[3]}` : `https://github.com/${m[4]}`;
+        frag.append(el("a", { href, target: "_blank", rel: "noopener", text: m[2] }));
+        last = m.index + m[0].length;
+      }
+      frag.append(text.slice(last));
+      node.replaceWith(frag);
+    }
+  }
+
+  function renderBody(text, repo) {
+    if (!text || !text.trim()) return null;
+    if (!canRenderMarkdown) return el("pre", { class: "plain", text: text.replace(/\r/g, "").trim() });
+
+    const div = el("div", { class: "md" });
+    div.innerHTML = DOMPurify.sanitize(marked.parse(text, { gfm: true, breaks: false }), { ADD_ATTR: ["target"] });
+    for (const a of div.querySelectorAll("a")) { a.target = "_blank"; a.rel = "noopener"; }
+    autolink(div, repo);
+    return div;
+  }
+
+  // Wrap a body so that tall ones are clamped with a "Show all" button; measured after mount.
+  function clampable(content) {
+    if (!content) return null;
+    const wrapper = el("div", { class: "body" }, el("div", { class: "content" }, content));
+    wrapper.append(el("button", {
+      class: "expand", type: "button", text: "Show all",
+      onclick: () => wrapper.classList.remove("clamped"),
+    }));
+    return wrapper;
+  }
+
+  function applyClamps(root) {
+    for (const body of root.querySelectorAll(".body")) {
+      if (body.querySelector(".content").scrollHeight > CLAMP_PX + 40) body.classList.add("clamped");
+    }
+  }
+
+  // ---- rendering --------------------------------------------------------------------------
+  // same emoji as gh-work-to-markdown
+  const REVIEW_CHIPS = {
+    APPROVED: ["chip-approved", "✅ approved"],
+    CHANGES_REQUESTED: ["chip-changes", "❌ changes requested"],
+    COMMENTED: ["chip-commented", "💬 commented"],
+    DISMISSED: ["chip-dismissed", "🚫 dismissed"],
+    PENDING: ["chip-pending", "⏳ pending"],
+  };
+  const STATE_EMOJI = { OPEN: "🟢", MERGED: "🟣", CLOSED: "🔴" };
+
+  function kindRow(ev) {
+    if (ev.kind === "comment") return el("div", { class: "kind-row" }, el("span", { class: "chip chip-comment", text: "comment" }));
+
+    if (ev.kind === "review") {
+      const [cls, label] = REVIEW_CHIPS[ev.state] || ["chip-commented", ev.state.toLowerCase()];
+      return el("div", { class: "kind-row" }, el("span", { class: `chip ${cls}`, title: `review state: ${ev.state}`, text: label }));
+    }
+
+    const title = `${ev.oid}\n${(ev.authors || []).map(authorLabel).join(", ")}`;
+    return el("div", { class: "kind-row" },
+      el("a", { class: "chip chip-commit", href: ev.url, target: "_blank", rel: "noopener", title, text: shortOid(ev.oid) }),
+      el("span", { class: "headline", text: ev.headline }),
+    );
+  }
+
+  function eventRow(ev, repo) {
+    const coauthors = ev.kind === "commit" && ev.authors && ev.authors.length > 1
+      ? el("div", { class: "coauthors", text: "with " + ev.authors.slice(1).map(authorLabel).join(", ") })
+      : null;
+    return el("div", { class: `event event-${ev.kind}` },
+      el("div", { class: "time" }, el("a", { href: ev.url, target: "_blank", rel: "noopener", title: fmtFull(ev.t), text: fmtTime(ev.t) })),
+      el("div", { class: "event-main" }, kindRow(ev), coauthors, clampable(renderBody(ev.body, repo))),
+    );
+  }
+
+  function eventList(pr) {
+    const repo = repoUrl(pr);
+    const list = el("div", { class: "events" });
+    let group = null, day = null, commitsSeen = 0, hidden = [];
+    for (const ev of events(pr)) {
+      if (localDay(ev.t) !== day) {
+        day = localDay(ev.t);
+        group = el("div", { class: "day-group" }, el("div", { class: "day", text: fmtDay(ev.t) }));
+        list.append(group);
+      }
+      const row = eventRow(ev, repo);
+      if (ev.kind === "commit" && ++commitsSeen > MAX_VISIBLE_COMMITS) {
+        row.hidden = true;
+        hidden.push(row);
+      }
+      group.append(row);
+    }
+    if (hidden.length) {
+      // a day whose every event is hidden would otherwise render as an empty box
+      const emptyGroups = [...list.querySelectorAll(".day-group")].filter((g) => [...g.querySelectorAll(".event")].every((r) => r.hidden));
+      for (const g of emptyGroups) g.hidden = true;
+      const more = el("button", {
+        class: "expand more", type: "button", style: "display:inline-block",
+        text: `${hidden.length} more commit${hidden.length === 1 ? "" : "s"}`,
+        onclick: () => { for (const n of [...hidden, ...emptyGroups]) n.hidden = false; more.remove(); },
+      });
+      list.append(more);
+    }
+    return list;
+  }
+
+  function statePill(pr) {
+    const draft = pr.isDraft && pr.state === "OPEN";
+    const cls = draft ? "pill-draft" : `pill-${pr.state.toLowerCase()}`;
+    const title = [
+      pr.createdAt ? `opened ${fmtFull(pr.createdAt)}` : null,
+      pr.updatedAt ? `updated ${fmtFull(pr.updatedAt)}` : null,
+    ].filter(Boolean).join("\n");
+    const label = draft ? "⚪ draft" : `${STATE_EMOJI[pr.state] || ""} ${pr.state.toLowerCase()}`.trim();
+    return el("span", { class: `pill ${cls}`, title, text: label });
+  }
+
+  function prCard(pr, owner) {
+    const byline = pr.author && pr.author.login && pr.author.login !== owner ? el("span", { text: `by ${pr.author.login}` }) : null;
+    const branches = pr.headRefName && pr.baseRefName
+      ? el("span", { class: "mono", text: `${pr.headRefName} → ${pr.baseRefName}` })
+      : null;
+    return el("section", { class: "pr" },
+      el("div", { class: "pr-head" },
+        statePill(pr),
+        el("span", { class: "pr-num", text: `#${pr.number}` }),
+        el("a", { class: "pr-title", href: pr.url, target: "_blank", rel: "noopener", text: pr.title }),
+        (branches || byline) ? el("div", { class: "pr-meta" }, el("span", { class: "mono", text: repoName(pr) }), branches, byline) : null,
+      ),
+      eventList(pr),
+    );
+  }
+
+  function header(prs) {
+    const all = prs.flatMap(events);
+    const times = all.map((e) => e.t).sort();
+    const repos = [...new Set(prs.map(repoName))];
+    const count = (kind) => all.filter((e) => e.kind === kind).length;
+    const span = times.length
+      ? (localDay(times[0]) === localDay(times[times.length - 1]) ? fmtDate(times[0]) : `${fmtDate(times[0])} – ${fmtDate(times[times.length - 1])}`)
+      : "no activity";
+    return el("header", null,
+      el("div", { class: "eyebrow", text: [repos.join(", ") || "github", span, data.generated ? `generated ${fmtFull(data.generated).split("\n")[0]}` : null].filter(Boolean).join(" · ") }),
+      el("h1", { text: "Work log" }),
+      prs.length ? el("div", { class: "stats" },
+        el("span", null, el("b", { text: prs.length }), " PRs"),
+        el("span", null, el("b", { text: count("comment") }), " comments"),
+        el("span", null, el("b", { text: count("review") }), " reviews"),
+        el("span", null, el("b", { text: count("commit") }), " commits"),
+      ) : null,
+    );
+  }
+
+  function render() {
+    const prs = [...data.prs].map((pr) => ({ pr, latest: events(pr).map((e) => e.t).sort().pop() || pr.updatedAt || "" }))
+      .sort((a, b) => b.latest.localeCompare(a.latest))
+      .map((x) => x.pr);
+    const owner = inferOwner(prs);
+    const app = document.getElementById("app");
+    app.replaceChildren(
+      header(prs),
+      ...(prs.length ? prs.map((pr) => prCard(pr, owner)) : [el("p", { class: "empty", text: "No PRs with your activity in this window." })]),
+    );
+    applyClamps(app);
+    if (!canRenderMarkdown) console.warn("marked/DOMPurify not loaded; bodies shown as plain text");
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
