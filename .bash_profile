@@ -169,14 +169,17 @@ finish dev_setup
 start source_custom_scripts
 
 # custom scripts/utils
-for module in clipboard datify todo mathutils papertitle fileutils gitutils anyq dockerutils; do
-    source "$HOME/scripts/$module.sh"
+for module in clipboard datify todo mathutils fileutils gitutils github_helpers anyq dockerutils; do
+    [ -f "$HOME/scripts/$module.sh" ] && source "$HOME/scripts/$module.sh"
 done
 
 mono() {
   # monorepo CLI
-  run_from_repo_root poetry run mono "$@"
+  run_from_repo_root uv run mono "$@"
 }
+
+# wt - Git worktree utilities
+[ -f ~/.gent/init.sh ] && source ~/.gent/init.sh
 
 start completions
 
@@ -186,11 +189,17 @@ source "$HOME/scripts/bash_completion.sh"
 
 install_custom_bash_completions
 
+start stack_setup
 # stack completions
 which stack > /dev/null && eval "$(stack --bash-completion-script stack)"
+finish stack_setup
 
 finish completions
 
 finish source_custom_scripts
+
+start cargo_setup
+. "$HOME/.cargo/env"
+finish cargo_setup
 
 finish bash_profile
