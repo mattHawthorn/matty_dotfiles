@@ -43,7 +43,7 @@ background() {
     echo $!
 }
 
-which gdate > /dev/null && export __datecmd="gdate" || export __datecmd="date"
+command -v gdate > /dev/null && export __datecmd="gdate" || export __datecmd="date"
 
 days-ago() {
   # Usage: days-ago [n_days] [date-format]
