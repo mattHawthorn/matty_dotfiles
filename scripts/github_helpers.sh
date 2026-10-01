@@ -1,12 +1,9 @@
+[ ! "$BASHUTILS_IMPORTED" == 1 ] && source "$(dirname "$BASH_SOURCE")/bashutils.sh"
+
 gh-login() {
   gh api user -q .login
 }
 alias date=gdate
-
-iso-n-days-ago() {
-  local n_days="${1-0}"
-  date -d "-${n_days} days" --iso-8601
-}
 
 gh-recent-prs() {
   # Usage: gh-recent-prs [-d n_days] [-f json-field ...] [-s open|closed|merged ...] [-S qualifier ...] [--involves login | --involves-me] [-q query]
@@ -47,7 +44,7 @@ gh-recent-prs() {
           *) echo "Unknown option: $arg" >&2; return 1 ;;
       esac
   done
-  local prev_date=$(iso-n-days-ago "$n_days")
+  local prev_date=$(days-ago "$n_days")
   local json_fields=()
   for field in "${fields[@]}"; do
       json_fields+=("--json" "$field")
@@ -99,7 +96,7 @@ gh-recent-prs() {
 gh-work-last-n-days() {
   local me="$(gh-login)"
   local n_days="${1-1}"
-  local prev_date=$(iso-n-days-ago "$n_days")
+  local prev_date=$(days-ago "$n_days")
   # `--involves` misses commits pushed to PRs the user neither opened, reviewed, commented on nor was mentioned in
   local prs="$(gh-recent-prs -d "${n_days}" --involves "$me" -f createdAt url headRefName baseRefName isDraft mergeCommit reviews comments commits \
     | jq -c "
