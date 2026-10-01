@@ -45,6 +45,17 @@ background() {
 
 which gdate > /dev/null && export __datecmd="gdate" || export __datecmd="date"
 
+days-ago() {
+  # Usage: days-ago [n_days] [date-format]
+  # Local midnight n_days ago, formatted as an ISO date by default. Handles GNU date (as gdate or date) and BSD date.
+  local n_days="${1-0}" format="+${2-%F}"
+  if "$__datecmd" --version > /dev/null 2>&1; then
+      "$__datecmd" -d "$("$__datecmd" +%F) -${n_days} days" "$format"
+  else
+      command date -j -v-"${n_days}"d -v0H -v0M -v0S "$format"
+  fi
+}
+
 # run time reporting utils
 ns_() {
     $__datecmd +%s%N
@@ -155,7 +166,7 @@ _cronjobs() {
 complete -o nospace -F _cronjobs runcronjob
 complete -o nospace -F _cronjobs lscronjobs
 
-export BASHUTILS_IMPORTED=1
+BASHUTILS_IMPORTED=1
 
 blockheading ()
 {
