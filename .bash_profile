@@ -169,7 +169,7 @@ finish dev_setup
 start source_custom_scripts
 
 # custom scripts/utils
-for module in clipboard datify todo mathutils fileutils gitutils github_helpers anyq dockerutils; do
+for module in clipboard datify todo mathutils fileutils gitutils github_helpers slack_helpers anyq dockerutils; do
     [ -f "$HOME/scripts/$module.sh" ] && source "$HOME/scripts/$module.sh"
 done
 
