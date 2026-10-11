@@ -1,5 +1,5 @@
 # If not running interactively, don't do anything
-[ -z "$PS1" ] && return
+[ -z "$PS1" ] && echo "(skipping .bash_profile)" && return
 
 # do this first to make GNU utils available in this script on Mac OS X
 if ! which brew > /dev/null; then
@@ -198,8 +198,10 @@ finish completions
 
 finish source_custom_scripts
 
-start cargo_setup
-. "$HOME/.cargo/env"
-finish cargo_setup
+if [ -f "$HOME/.cargo/env" ]; then
+    start cargo_setup
+    . "$HOME/.cargo/env"
+    finish cargo_setup
+fi
 
 finish bash_profile
