@@ -117,7 +117,7 @@ start dev_setup
 
 if which mise > /dev/null; then
     start mise_setup
-    eval "$($HOME/.local/bin/mise activate bash)"
+    eval "$(mise activate bash)"
     finish mise_setup
 fi
 
